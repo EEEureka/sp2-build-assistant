@@ -1,0 +1,28 @@
+# Generated outputs and local runtime dependencies
+/bin/
+/dist/
+/tests/artifacts/
+/tests/.deps/
+/tests/.plot-deps/
+**/__pycache__/
+*.py[cod]
+*.dll
+*.exe
+*.pdb
+*.obj
+*.lib
+*.exp
+*.previous
+*.log
+
+# Machine-specific state, credentials and agent sessions
+/.local/
+/.codex/
+/.vs/
+/.idea/
+.env
+.env.*
+!.env.example
+host.json
+*.pem
+*.key
