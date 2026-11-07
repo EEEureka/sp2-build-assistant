@@ -15,13 +15,14 @@ using UnityEngine;
 
 namespace SP2BuildAssistant
 {
-    [BepInPlugin("local.sp2.buildassistant", "SP2 Build Assistant", "0.5.0")]
+    [BepInPlugin("local.sp2.buildassistant", "SP2 Build Assistant", "0.7.8")]
     public sealed class Plugin : BaseUnityPlugin
     {
         private Server server;
         private Harmony harmony;
         private void Awake()
         {
+            ForegroundInputGuard.Install(Logger);
             var runtime = gameObject.AddComponent<BuildRuntime>();
             runtime.Log = Logger;
             harmony = new Harmony("local.sp2.buildassistant");
@@ -30,9 +31,11 @@ namespace SP2BuildAssistant
             DesignerExpressionLifetime.Install(harmony,Logger);
             server = new Server(runtime);
             server.Start();
-            Logger.LogInfo("SP2 Build Assistant 0.5.0 ready: " + server.Url);
+            Logger.LogInfo("SP2 Build Assistant 0.7.8 agent-sdk development ready: " + server.Url);
         }
-        private void OnDestroy() { if (server != null) server.Dispose(); if (harmony != null) harmony.UnpatchSelf(); }
+        private void OnDestroy() { if (server != null) server.Dispose(); if (harmony != null) harmony.UnpatchSelf(); ForegroundInputGuard.Uninstall(); }
+        private void OnApplicationFocus(bool focused) { if (!focused) ForegroundInputGuard.FocusLost(); }
+        private void OnApplicationPause(bool paused) { if (paused) ForegroundInputGuard.FocusLost(); }
     }
 
     internal sealed class ApiError : Exception
@@ -82,7 +85,7 @@ namespace SP2BuildAssistant
             int pid = Process.GetCurrentProcess().Id;
             discovery = Path.Combine(dir, pid + ".json");
             File.WriteAllText(discovery, new JObject { ["baseUrl"] = Url, ["token"] = token, ["pid"] = pid,
-                ["instanceId"] = Guid.NewGuid().ToString("N"), ["pluginVersion"] = "0.5.0", ["protocolVersion"] = "1" }.ToString(), new UTF8Encoding(false));
+                ["instanceId"] = Guid.NewGuid().ToString("N"), ["pluginVersion"] = "0.7.8", ["protocolVersion"] = "1" }.ToString(), new UTF8Encoding(false));
             new Thread(Listen) { IsBackground = true, Name = "SP2BuildAssistant HTTP" }.Start();
         }
         private void Listen()
@@ -116,7 +119,7 @@ namespace SP2BuildAssistant
                     string body;
                     using (var reader = new StreamReader(ctx.Request.InputStream, Encoding.UTF8)) body = reader.ReadToEnd();
                     if (body.Length > 4 * 1024 * 1024) throw new ApiError("input_too_large", "Request limit is 4 MiB.");
-                    JObject input = JObject.Parse(body);
+                    JObject input = InputJson.Parse(body);
                     string key = (string)input["requestId"];
                     string signature = Json.Hash(input.ToString(Formatting.None));
                     Job job;
@@ -134,10 +137,17 @@ namespace SP2BuildAssistant
                             job = new Job { Id = Guid.NewGuid().ToString("N"), Key = key, Signature = signature, Input = input, Results = results };
                             jobs.Add(job.Id, job);
                             if (!string.IsNullOrEmpty(key)) keys.Add(key, job.Id);
+                            runtime.ReserveRecoveryLease(job);
                             runtime.Queue.Enqueue(job);
                         }
                     }
-                    response = Json.Ok(job.View());
+                    response = Json.Ok(JobDiagnostics.View(job));
+                }
+                else if(route.StartsWith("/v1/requests/")&&ctx.Request.HttpMethod=="GET")
+                {
+                    string key=route.Substring("/v1/requests/".Length),id;Job job;
+                    lock(gate){if(string.IsNullOrWhiteSpace(key)||!keys.TryGetValue(key,out id)||!jobs.TryGetValue(id,out job))throw new ApiError("request_not_found","This request is not known by this process. Do not infer that it was never executed by an earlier process.");}
+                    var view=JobDiagnostics.View(job);view["requestId"]=key;response=Json.Ok(view);
                 }
                 else if (route.StartsWith("/v1/operations/"))
                 {
@@ -146,7 +156,7 @@ namespace SP2BuildAssistant
                     lock (gate) { if (!jobs.TryGetValue(id, out job)) throw new ApiError("operation_not_found", "Task unavailable in this game instance; do not assume it did not execute."); }
                     if (ctx.Request.HttpMethod == "DELETE") lock (job.Sync) job.CancelRequested = true;
                     else if (ctx.Request.HttpMethod != "GET") throw new ApiError("method_not_allowed", "Use GET or DELETE.");
-                    response = Json.Ok(job.View());
+                    response = Json.Ok(JobDiagnostics.View(job));
                 }
                 else throw new ApiError("route_not_found", "Unknown route.");
             }

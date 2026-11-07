@@ -1,0 +1,7 @@
+{
+  "component": "tapered-shell",
+  "name": "tapered-shell",
+  "station_updates": {"front": {"center": [0.25, 0.1, 2], "width": 1.1}},
+  "protected_station_ids": ["rear"],
+  "hypothesis": "Syntax example: correct one measured station while preserving the rear section and existing detail."
+}

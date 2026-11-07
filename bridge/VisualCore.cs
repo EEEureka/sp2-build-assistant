@@ -36,7 +36,7 @@ namespace SP2BuildAssistant
             public V Unit(){double n=Math.Sqrt(Dot(this));if(n<1e-10||!Finite(n))throw new ApiError("invalid_view","View axes must be finite and nonzero.");return this*(1/n);}
             public JArray Json(){return new JArray(X,Y,Z);}
         }
-        internal sealed class MeshData { public int PartId,Group; public V[] Vertices; public int[] Indices; }
+        internal sealed class MeshData { public int PartId,Group; public V[] Vertices; public int[] Indices,SourceVertexIndices; public JObject Attributes; }
         internal sealed class View
         {
             public string Name; public V Forward,Up,Right;
@@ -88,7 +88,8 @@ namespace SP2BuildAssistant
             var vertices=new List<V>();var indices=new List<int>();var map=new Dictionary<int,int>();removedTriangles=0;
             for(int t=0;t<source.Indices.Length;t+=3){bool valid=true;for(int j=0;j<3;j++){int i=source.Indices[t+j];if(i<0||i>=source.Vertices.Length)throw new ApiError("invalid_geometry","Invalid triangle index.");V v=source.Vertices[i];if(!Finite(v.X)||!Finite(v.Y)||!Finite(v.Z))valid=false;}
                 if(!valid){removedTriangles++;continue;}for(int j=0;j<3;j++){int old=source.Indices[t+j];if(!map.TryGetValue(old,out int index)){index=vertices.Count;vertices.Add(source.Vertices[old]);map.Add(old,index);}indices.Add(index);}}
-            return new MeshData{PartId=source.PartId,Group=source.Group,Vertices=vertices.ToArray(),Indices=indices.ToArray()};
+            var sourceIndices=new int[vertices.Count];foreach(var entry in map)sourceIndices[entry.Value]=entry.Key;
+            return new MeshData{PartId=source.PartId,Group=source.Group,Vertices=vertices.ToArray(),Indices=indices.ToArray(),SourceVertexIndices=sourceIndices};
         }
 
         internal static Result Render(MeshData[] meshes,int[] partIds,View[] views,int width,int height,bool details,JObject manifest,Func<bool> cancelled)

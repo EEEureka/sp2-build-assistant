@@ -65,24 +65,34 @@ namespace SP2BuildAssistant
         }
         internal static XElement State(XElement part)
         { return part.Element("JFuselage.State") ?? part.Element("JWing.State") ?? part.Element("ControlSurfacePart.State"); }
-        internal static void Keys(JObject value, IEnumerable<string> allowed)
+        private static ApiError ShapeError(JToken token,string message,string expected=null,string fallback=null)
         {
-            if (value == null) throw new ApiError("invalid_shape", "Expected an object.");
+            string path=token?.Path;
+            if(string.IsNullOrEmpty(path))path=fallback;
+            return new ApiError("invalid_shape",message,new JObject{["jsonPath"]=string.IsNullOrEmpty(path)?"$":"$."+path,["expectedType"]=expected,["actualType"]=token?.Type.ToString()??"missing"});
+        }
+        internal static void Keys(JToken token, IEnumerable<string> allowed)
+        {
+            var value=token as JObject;
+            if (value == null) throw ShapeError(token,"Expected an object.","object");
             string[] unknown = value.Properties().Select(p=>p.Name).Except(allowed).ToArray();
-            if (unknown.Length > 0) throw new ApiError("invalid_shape", "Unknown fields: " + string.Join(", ", unknown));
+            if (unknown.Length > 0) {
+                var error=ShapeError(value[unknown[0]],"Unknown fields: "+string.Join(", ",unknown),"declared field");
+                error.Details["unknownFields"]=new JArray(unknown);throw error;
+            }
         }
         internal static double Number(JToken value, double min, double max, string field, bool integer = false)
         {
-            if (value == null || (value.Type != JTokenType.Float && value.Type != JTokenType.Integer)) throw new ApiError("invalid_shape", field + " must be a JSON number.");
+            if (value == null || (value.Type != JTokenType.Float && value.Type != JTokenType.Integer)) throw ShapeError(value,field+" must be a JSON number.","number",field);
             double n = (double)value;
-            if (double.IsNaN(n) || double.IsInfinity(n) || n < min || n > max || (integer && n != Math.Truncate(n))) throw new ApiError("invalid_shape", field + " must be " + (integer ? "an integer " : "") + "in ["+min+","+max+"].");
+            if (double.IsNaN(n) || double.IsInfinity(n) || n < min || n > max || (integer && n != Math.Truncate(n))) throw ShapeError(value,field+" must be "+(integer?"an integer ":"")+"in ["+min+","+max+"].",integer?"integer":"number",field);
             return n;
         }
         private static object Validate(JToken token, Field f, string name)
         {
             if (token.Type == JTokenType.Null && f.Nullable) return null;
-            if (f.Type == "boolean") { if (token.Type != JTokenType.Boolean) throw new ApiError("invalid_shape",name+" must be a boolean."); return (bool)token; }
-            if (f.Type == "string") { if (token.Type != JTokenType.String || string.IsNullOrWhiteSpace((string)token)) throw new ApiError("invalid_shape",name+" must be a nonempty string."); return (string)token; }
+            if (f.Type == "boolean") { if (token.Type != JTokenType.Boolean) throw ShapeError(token,name+" must be a boolean.","boolean"); return (bool)token; }
+            if (f.Type == "string") { if (token.Type != JTokenType.String || string.IsNullOrWhiteSpace((string)token)) throw ShapeError(token,name+" must be a nonempty string.","string"); return (string)token; }
             return Number(token, f.Min, f.Max, name, f.Type == "integer");
         }
         private static void WriteFields(XElement state, JObject patch, Dictionary<string, Field> fields)
@@ -108,13 +118,13 @@ namespace SP2BuildAssistant
         private static void NamedVector(XElement section, JObject patch, string field, string attr, string[] names, double min, double max, string defaults, bool integer = false, bool boolean = false, bool nullable = false)
         {
             if (patch[field] == null) return;
-            var obj = patch[field] as JObject; Keys(obj,names);
+            Keys(patch[field],names);var obj=(JObject)patch[field];
             var values = ((string)section.Attribute(attr) ?? defaults).Split(',');
             if (values.Length != names.Length) throw new ApiError("invalid_shape", "Unsupported native vector format: " + attr);
             for (int i=0;i<names.Length;i++) if (obj[names[i]] != null) {
                 var token=obj[names[i]];
                 if (nullable && token.Type==JTokenType.Null) values[i]="";
-                else if (boolean) { if (token.Type!=JTokenType.Boolean) throw new ApiError("invalid_shape",field+" requires booleans."); values[i]=((bool)token)?"true":"false"; }
+                else if (boolean) { if (token.Type!=JTokenType.Boolean) throw ShapeError(token,field+" requires booleans.","boolean"); values[i]=((bool)token)?"true":"false"; }
                 else values[i]=Number(token,min,max,field+"."+names[i],integer).ToString("R",C);
             }
             section.SetAttributeValue(attr,string.Join(",",values));
@@ -213,7 +223,8 @@ namespace SP2BuildAssistant
         private static List<JObject> SectionPatches(JToken token,int count)
         {
             var a=token as JArray;
-            if(a==null || a.Count==0 || a.Any(x=>!(x is JObject))) throw new ApiError("invalid_shape","sections must be a nonempty array of indexed objects.");
+            if(a==null || a.Count==0)throw ShapeError(token,"sections must be a nonempty array of indexed objects.","nonempty array");
+            foreach(var child in a)if(!(child is JObject))throw ShapeError(child,"Each section must be an indexed object.","object");
             var result=a.Cast<JObject>().ToList();
             foreach(var p in result) Number(p["index"],0,count-1,"section index",true);
             if(result.Select(p=>(int)p["index"]).Distinct().Count()!=result.Count) throw new ApiError("invalid_shape","Duplicate section index.");
@@ -243,7 +254,7 @@ namespace SP2BuildAssistant
             }
             if(patch["wingtip"]!=null) {
                 if(patch["wingtip"].Type==JTokenType.Null) state.Element("Wingtip")?.Remove();
-                else { var tip=patch["wingtip"] as JObject;Keys(tip,new[]{"stretch"});double stretch=Number(tip["stretch"],0,4,"wingtip.stretch");var e=new XElement("Wingtip",new XAttribute("style","Rounded"),new XAttribute("stretch",stretch.ToString("R",C)));state.Element("Wingtip")?.Remove();state.Add(e); }
+                else { Keys(patch["wingtip"],new[]{"stretch"});var tip=(JObject)patch["wingtip"];double stretch=Number(tip["stretch"],0,4,"wingtip.stretch");var e=new XElement("Wingtip",new XAttribute("style","Rounded"),new XAttribute("stretch",stretch.ToString("R",C)));state.Element("Wingtip")?.Remove();state.Add(e); }
             }
         }
         private static void PatchControl(XElement state,JObject patch)
@@ -254,7 +265,7 @@ namespace SP2BuildAssistant
             if(patch["chordFraction"]!=null) ArrayNumbers(patch["chordFraction"],2,.05,(string)state.Attribute("style")=="Slat"?.4:.8,"chordFraction");
         }
         internal static double[] ArrayNumbers(JToken token,int count,double min,double max,string field)
-        { var a=token as JArray;if(a==null || a.Count!=count)throw new ApiError("invalid_shape",field+" requires "+count+" numbers.");return a.Select(x=>Number(x,min,max,field)).ToArray(); }
+        { var a=token as JArray;if(a==null || a.Count!=count)throw ShapeError(token,field+" requires "+count+" numbers.","array",field);return a.Select(x=>Number(x,min,max,field)).ToArray(); }
         internal static void Mirror(XElement state)
         {
             if(state.Name=="JFuselage.State") {
@@ -279,7 +290,7 @@ namespace SP2BuildAssistant
             if(family=="fuselage") {
                 result["sectionFields"]=describe(FuselageSection);result["additionalFields"]=JArray.FromObject(new[]{"length (0.001..1000)","offset [x,y,z], mutually exclusive with length","sections [{index,width,height,cornerRadius,cornerStretch,cornerSamples,edgeCurvature,edgeSamples,cutting,...}]"});
                 result["corners"]=new JArray(Corners);result["edgesAndCutting"]=new JArray(Edges);
-                result["sectionRules"]=new JArray("width/height 0..1000 m; at least one nondegenerate section", "cornerRadius 0..1000 m; native geometry clamps radius against adjacent edges", "cornerStretch boolean per corner; corner/edge samples integer 1..32", "edgeCurvature fraction 0..1; cutting fraction 0..1 or null=automatic; opposite cuts sum <1", "curved middle slice has no cutting/smoothing/sync; cone tip has cutting only", "legacyThickness blocks thicknessFraction writes");
+                result["sectionRules"]=new JArray("width/height 0..1000 m; at least one nondegenerate section", "cornerRadius metres (0..1000) when cornerStretch=false; fraction (0..1) when true; native geometry clamps authored/control corners before interpolation", "cornerStretch boolean per corner; corner/edge samples integer 1..32", "edgeCurvature fraction 0..1; cutting fraction 0..1 or null=automatic; zero still requests cutting at the nominal boundary; opposite cuts sum <1", "curved middle slice has no cutting/smoothing/sync; cone tip has cutting only", "legacyThickness blocks thicknessFraction writes");
             } else if(family=="wing") {result["sectionFields"]=describe(WingSection);result["additionalFields"]=new JArray("sections patches [{index,...}]", "replaceSections complete ordered list, 2..32 entries", "wingtip null or {stretch:0..4}"); result["airfoilExamples"]=new JArray("NACA0012","NACA2412","Symmetric","Semi-Symmetric","Flat Bottom");}
             else {result["styles"]=new JObject(new[]{"StandardFlap","FowlerFlap","Slat","BrakeFlap"}.Select(s=>new JProperty(s,describe(Control(s)))));result["readOnlyStyles"]=new JArray("Spoiler","SplitFlap");result["additionalFields"]=new JArray("spanRange [start,end] metres within attached wing", "chordFraction [root,tip], 0.05..0.8 (Slat 0.05..0.4)");}
             return result;

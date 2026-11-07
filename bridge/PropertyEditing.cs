@@ -35,6 +35,7 @@ namespace SP2BuildAssistant
             if(cmd=="properties.get"&&args["id"]==null)throw new ApiError("invalid_input","properties.get requires a live part id.");
             if(new[]{"id","templateId","type"}.Count(x=>args[x]!=null)!=1)throw new ApiError("invalid_input","Choose exactly one of id, templateId or type.");
             var parts=new JArray();
+            JObject templateSource=null;
             Action<PartData,XElement,bool,int?> add=(p,xml,live,templatePartId)=>{
                 var all=PropertyRegistry.Describe(p,xml,live);var filtered=all.Where(x=>args["family"]==null||(string)x["family"]==(string)args["family"])
                     .Where(x=>args["query"]==null||x.ToString().IndexOf((string)args["query"],StringComparison.OrdinalIgnoreCase)>=0)
@@ -43,16 +44,19 @@ namespace SP2BuildAssistant
                 string shapeFamily=ShapeCodec.Family(xml);var editors=new JArray();
                 if(shapeFamily!=null)editors.Add(new JObject{["family"]=shapeFamily,["readCommand"]="shape.get",["writeOperation"]="shape.update",["schemaCommand"]="shape.schema",["schemaArgs"]=new JObject{["family"]=shapeFamily},["configuration"]=ShapeCodec.Read(xml),["meaning"]="Use the existing typed shape editor for this family. Its schema is authoritative; UI/XML discovery does not create a duplicate generic setter."});
                 if(xml.Elements("InputController.State").Any())editors.Add(new JObject{["family"]="inputControllers",["readCommand"]="parts.get",["writeOperation"]="part.update",["contract"]=JToken.FromObject(InputControllerFields.Description())});
-                parts.Add(new JObject{["partType"]=p.PartType.PartTypeId,["partId"]=live?(JToken)p.Id:null,["templatePartId"]=templatePartId,["specializedEditors"]=editors,
+                parts.Add(new JObject{["partType"]=p.PartType.PartTypeId,["partId"]=live?(JToken)p.Id:null,["templatePartId"]=templatePartId,["templateSource"]=live?null:templateSource?.DeepClone(),["specializedEditors"]=editors,
                     ["total"]=filtered.Length,["offset"]=offset,["fields"]=new JArray(filtered.Skip(offset).Take(limit)),["textRendering"]=TextRenderingInfo(p,live),
                     ["coverage"]=new JObject{["discovered"]=all.Count,["byEditability"]=new JObject(all.GroupBy(x=>(string)x["editability"]).Select(g=>new JProperty(g.Key,g.Count()))),
                         ["denominator"]="native UI attributes plus serialized attributes and overload metadata; complex nested custom widgets remain explicitly unsupported"}});
             };
             if(args["id"]!=null){var p=Part(VisualScope.Integer(args["id"],"id",0));add(p,p.GenerateXml(),true,null);}
             else{
-                var templates=args["templateId"]!=null?Templates().Where(x=>x.Key==(string)args["templateId"]):Templates().Where(x=>x.Value.AssemblyElement.Descendants("Part").Any(p=>(string)p.Attribute("partType")== (string)args["type"])).Take(1);
+                var templates=(args["templateId"]!=null?Templates().Where(x=>x.Key==(string)args["templateId"]):Templates().Where(x=>x.Value.AssemblyElement.Descendants("Part").Any(p=>(string)p.Attribute("partType")== (string)args["type"]))).ToArray();
+                if(args["templateId"]==null&&templates.Length>1)throw new ApiError("template_ambiguous","Several native templates use this partType. Select an explicit templateId for its actual defaults.",new JObject{
+                    ["partType"]=args["type"].DeepClone(),["candidates"]=new JArray(templates.Select(t=>new JObject{["templateId"]=t.Key,["templateName"]=t.Value.Name,["source"]=t.Value.Mod==null?(t.Value.IsSubassembly?"loaded_subassembly":"builtin"):"mod"}))});
                 foreach(var t in templates)foreach(var px in t.Value.AssemblyElement.Descendants("Part")){
                     if(args["type"]!=null&&(string)px.Attribute("partType")!=(string)args["type"])continue;
+                    templateSource=new JObject{["templateId"]=t.Key,["templateName"]=t.Value.Name,["source"]=t.Value.Mod==null?(t.Value.IsSubassembly?"loaded_subassembly":"builtin"):"mod"};
                     var p=new PartData(new XElement(px),AircraftData.CurrentXmlVersion,CraftLoadContext.Designer);add(p,px,false,p.Id);
                 }
                 if(parts.Count==0)throw new ApiError("template_not_found","No available template matched the requested ID or part type.");

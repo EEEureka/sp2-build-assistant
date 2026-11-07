@@ -26,10 +26,16 @@ namespace SP2BuildAssistant
                 ["transform.apply"]="partIds groupId frame mode translation position rotationQuaternion pivot anchorPartId symmetric",
                 ["transform.align"]="partIds groupId sourcePartId sourcePointId targetPartId targetPointId offset axis symmetric",
                 ["decal.pose.set"]="partId frame position rotationQuaternion symmetric",
-                ["part.add"]="templateId temporaryId position rotation",["part.update"]="partId changes symmetric",["part.delete"]="partId symmetric assembly",
+                ["part.add"]="templateId temporaryId position rotation rootOnly",["part.update"]="partId changes symmetric",["part.delete"]="partId symmetric assembly",
+                ["part.clone"]="partIds temporaryIds",["hole.create"]="templateId temporaryId targetPartIds position rotationQuaternion size",["hole.update"]="partId targetPartIds size position rotationQuaternion",
+                ["part.mirror"]="partIds temporaryIds linked",
                 ["connection.connect"]="partA partB attachPointA attachPointB symmetric",["connection.disconnect"]="partA partB symmetric",
+                ["connection.auto"]="partA partB symmetric",
+                ["native.state"]="partId changes",
+                ["mechanical.update"]="partId startWorld endWorld radiusMultiplier bootA bootB",
+                ["part.retype"]="partId partType acceptConnectionLoss temporaryId",
                 ["variable.add"]="variable function priority activator",["variable.update"]="index variable function priority activator",["variable.delete"]="index",["variable.reorder"]="order",
-                ["output.bind"]="partId modifier outputId variable priority activator",["output.update"]="partId modifier outputId variable priority activator",["output.unbind"]="partId modifier outputId",
+                ["output.bind"]="partId modifier modifierIndex outputId variable priority activator",["output.update"]="partId modifier modifierIndex outputId variable priority activator",["output.unbind"]="partId modifier modifierIndex outputId",
                 ["craft.refresh"]="",["shape.update"]="partId patch symmetric",["wing.control.add"]="wingPartId style patch temporaryId",["fuselage.match"]="partId sectionIndex",
                 ["symmetry.link"]="partIds",["symmetry.unlink"]="partId",["symmetry.create"]="partId",["symmetry.enable"]="partId enabled"
             };
@@ -239,7 +245,7 @@ namespace SP2BuildAssistant
             var prepared=control.GenerateXml();var patch=op["patch"] as JObject;
             ShapeCodec.Patch(prepared,patch,AirfoilValid);
             ValidateControlPatch(control,prepared,patch,wing.GetModifier<JWingData>());
-            control.GetModifier<ControlSurfacePartData>().RestoreFromState(ShapeCodec.State(prepared));
+            NativeModifierState.Restore(control.GetModifier<ControlSurfacePartData>(), ShapeCodec.State(prepared), Assets.Scripts.Craft.AircraftData.CurrentXmlVersion);
             // The native wing tool attaches controls to the wing surface receiver,
             // not the structural root. First-compatible selection used to consume
             // a free root and prevented attaching the wing to its host later.
@@ -258,6 +264,7 @@ namespace SP2BuildAssistant
             if(name.Length>128)return false;
             // A cambered NACA4 with a zero camber position is singular.
             var m=System.Text.RegularExpressions.Regex.Match(name,"^NACA([0-9])([0-9])([0-9]{2})$",System.Text.RegularExpressions.RegexOptions.IgnoreCase);
+            if(name.StartsWith("NACA",StringComparison.OrdinalIgnoreCase)&&!m.Success)return false;
             if(m.Success && (m.Groups[3].Value=="00" || (m.Groups[1].Value!="0" && m.Groups[2].Value=="0")))return false;
             try{return AirfoilRegistry.ParseAirfoil(name)!=null;}catch{return false;}
         }

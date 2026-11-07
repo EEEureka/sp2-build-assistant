@@ -1,0 +1,9 @@
+{
+  "name": "Semantic verbal demo",
+  "intent": "Build the two expressly dimensioned demonstration components and preserve their placement and clearance.",
+  "reference_id": "verbal-demo",
+  "tolerance_m": 0.01,
+  "part_budget": 8,
+  "max_iterations": 6,
+  "max_native_operations": 100
+}

@@ -6,6 +6,7 @@ using System.Text;
 using Assets.Scripts.Craft.Parts;
 using Assets.Scripts.Craft.Parts.Modifiers;
 using Assets.Scripts.Design;
+using Assets.Scripts.Design.Tools;
 using Assets.Scripts.Design.UI.PartProperties;
 using Newtonsoft.Json.Linq;
 using UnityEngine;
@@ -17,16 +18,24 @@ namespace SP2BuildAssistant
     {
         private int? retainedSelection;
         private bool selectionCaptured;
+        private DesignerTool retainedSimpleTool;
         private void CaptureSelection(Designer d)
         {
             if (selectionCaptured) return;
             retainedSelection = d.SelectedPart == null ? (int?)null : d.SelectedPart.Part.Id;
+            var tool=d.Tools.SelectedTool;
+            // Stateful shape/attachment editors have references and section
+            // selections that cannot be guessed across a rebuild. Cooperative
+            // jobs wait for those tools; preserve the supported idle tools.
+            retainedSimpleTool = tool==d.Tools.MovePartTool || tool==d.Tools.ViewTool || tool==d.Tools.ColorTool ||
+                (tool==d.Tools.RotateTool || tool==d.Tools.TranslateTool) && !(tool as TransformTool).IsExternalTargetActive ? tool : null;
             selectionCaptured = true;
         }
         private void RestoreSelection(Designer d)
         {
             if (!selectionCaptured) return;
             d.SelectedPart = retainedSelection.HasValue ? d.Aircraft.Aircraft.Assembly.Parts.FirstOrDefault(p => p.Id == retainedSelection.Value)?.PartScript : null;
+            if(retainedSimpleTool!=null && d.Tools.SelectedTool!=retainedSimpleTool) d.Tools.SelectTool(retainedSimpleTool);
         }
         private static void RefreshSelectedPropertyWidgets(Designer d)
         {
@@ -104,14 +113,41 @@ namespace SP2BuildAssistant
         }
         private static JObject BoundsInfo(Bounds bounds)
         { return new JObject { ["center"] = new JArray(Vec(bounds.center)), ["size"] = new JArray(Vec(bounds.size)), ["min"] = new JArray(Vec(bounds.min)), ["max"] = new JArray(Vec(bounds.max)) }; }
-        private static JObject GeometryInfo(PartData p)
+        private JObject GeometryInfo(PartData p)
         {
             var script = p.PartScript;
+            var registered = new System.Collections.Generic.HashSet<Renderer>(script.PartMaterialScript.RendererMaps.Select(m => (Renderer)m.Renderer).Where(r => r != null));
+            var renderers = new JArray(); var excluded = new JArray(); Bounds? whole = null;
+            foreach (var r in script.GetComponentsInChildren<Renderer>(true))
+            {
+                var owner = r.GetComponentInParent<PartScript>();
+                string reason = owner != script ? "other_part_descendant" :
+                    r.GetComponentInParent<HideScript>()?.HideDuringScreenshot == true ? "editor_helper" :
+                    !(r is MeshRenderer) && !(r is SkinnedMeshRenderer) ? "effect_or_non_surface_renderer" :
+                    !registered.Contains(r) && !(r is SkinnedMeshRenderer) ? "unregistered_surface" :
+                    !p.VisibleInDesigner || !r.enabled || !r.gameObject.activeInHierarchy ? "hidden_or_disabled" :
+                    r is MeshRenderer && r.GetComponent<MeshFilter>()?.sharedMesh == null ? "missing_mesh" :
+                    r is SkinnedMeshRenderer && ((SkinnedMeshRenderer)r).sharedMesh == null ? "missing_mesh" : null;
+                var row = new JObject { ["name"] = r.name, ["rendererId"] = r.GetInstanceID(), ["type"] = r.GetType().Name,
+                    ["ownerPartId"] = owner == null ? (JToken)JValue.CreateNull() : new JValue(owner.Part.Id),
+                    ["scope"] = "sub_renderer", ["coordinateSystem"] = "world", ["units"] = "metres",
+                    ["enabled"] = r.enabled, ["active"] = r.gameObject.activeInHierarchy, ["includedInRenderBounds"] = reason == null,
+                    ["exclusionReason"] = reason, ["bounds"] = BoundsInfo(r.bounds) };
+                if (r.enabled && r.gameObject.activeInHierarchy) renderers.Add(row); // Preserve the legacy list, now classified.
+                if (reason != null) { excluded.Add(row.DeepClone()); continue; }
+                var b = r.bounds;
+                if (whole.HasValue) { var combined = whole.Value; combined.Encapsulate(b); whole = combined; } else whole = b;
+            }
             return new JObject {
                 ["partId"] = p.Id, ["coordinateSystem"] = "world metres",
-                ["renderers"] = new JArray(script.GetComponentsInChildren<Renderer>().Where(r => r.enabled).Select(r => new JObject { ["name"] = r.name, ["bounds"] = BoundsInfo(r.bounds) })),
-                ["colliders"] = new JArray(script.GetComponentsInChildren<Collider>().Where(c => c.enabled && !c.isTrigger && c.gameObject.layer != 25).Select(c => new JObject { ["name"] = c.name, ["type"] = c.GetType().Name, ["layer"] = c.gameObject.layer, ["bounds"] = BoundsInfo(c.bounds) })),
-                ["editorColliders"] = new JArray(script.EditorColliders.Select(c => new JObject { ["bounds"] = BoundsInfo(c.Bounds), ["includeInBounds"] = c.IncludeInBounds }))
+                ["renderBounds"] = whole.HasValue ? (JToken)BoundsInfo(whole.Value) : JValue.CreateNull(),
+                ["renderBoundsMeaning"] = "Whole owned active entity surface: union of native Renderer world AABBs, including effective hierarchy transforms. Do not multiply by Part.scale again. Conservative bounds, not a tight vertex bound or physical clearance proof. No render surface does not imply a useless part.",
+                ["renderBoundsMembers"] = new JArray(renderers.OfType<JObject>().Where(r => (bool)r["includedInRenderBounds"]).Select(r => (int)r["rendererId"])),
+                ["renderers"] = renderers, ["rendererExclusions"] = excluded,
+                ["colliders"] = new JArray(script.GetComponentsInChildren<Collider>().Where(c => c.GetComponentInParent<PartScript>() == script && c.enabled && !c.isTrigger && c.gameObject.layer != 25).Select(c => new JObject { ["name"] = c.name, ["type"] = c.GetType().Name, ["layer"] = c.gameObject.layer, ["ownerPartId"] = p.Id, ["scope"] = "physics_collider", ["coordinateSystem"] = "world metres", ["bounds"] = BoundsInfo(c.bounds) })),
+                ["editorColliders"] = new JArray(script.EditorColliders.Select(c => new JObject { ["bounds"] = BoundsInfo(c.Bounds), ["includeInBounds"] = c.IncludeInBounds, ["ownerPartId"] = p.Id, ["scope"] = "native_editor_collider", ["coordinateSystem"] = "world metres" })),
+                ["colliderMeaning"] = "Physics and editor colliders are separate from entity render surfaces; neither is included in renderBounds.",
+                ["geometryStamp"] = GeometrySignature(Current()), ["geometryStampKind"] = "native_mesh_and_collider_bounds_signature_not_vertex_content_hash"
             };
         }
         private object Raycast(JObject a)

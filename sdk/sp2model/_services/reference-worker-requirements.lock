@@ -1,0 +1,6 @@
+# CPython 3.12 / Windows AMD64 only. All runtime dependencies are pinned.
+# Install only from verified wheels in reference-worker-wheels.json.
+numpy==2.2.6 --hash=sha256:c1f9540be57940698ed329904db803cf7a402f3fc200bfe599334c9bd84a40b2
+pillow==11.3.0 --hash=sha256:a6444696fce635783440b7f7a9fc24b3ad10a9ea3f0ab66c5905be1c19ccf17d
+opencv-python-headless==4.11.0.86 --hash=sha256:6c304df9caa7a6a5710b91709dd4786bf20a74d57672b3c31f7033cc638174ca
+scipy==1.15.3 --hash=sha256:52092bc0472cfd17df49ff17e70624345efece4e1a12b23783a1ac59a1b728ed

@@ -142,6 +142,7 @@ def designer_schema():
     return obj({
         "craftSessionId": {"type": "string", "minLength": 1},
         "expectedRevision": {"type": "integer", "minimum": 1},
+        "cuttingOutlinesVisible": {"type":"boolean","description":"Optional temporary native cutting-outline visibility; prior editor state is restored and reported."},
         "views": {"type": "array", "minItems": 1, "maxItems": 8, "items": {"oneOf": [{"enum": presets}, view]}, "description": "Default [current]. Named views use Unity world axes. Distinct names required. Every requested view is recommended, overview duplicates the first."},
         "focusPartIds": {"type": "array", "minItems": 1, "maxItems": 2048, "uniqueItems": True, "items": {"type": "integer", "minimum": 0}, "description": "Framing only: all visible scene objects remain rendered. Default all current craft parts. Current view does not auto-fit."},
         "resolution": {**obj({"width": {"type": "integer", "minimum": 128, "maximum": 2048}, "height": {"type": "integer", "minimum": 128, "maximum": 2048}}, ["width", "height"]), "description": "Omit to preserve native viewport aspect, longest edge up to 1280 pixels. Explicit size requires both dimensions; 16 million total pixels including the first-view overview copy."},

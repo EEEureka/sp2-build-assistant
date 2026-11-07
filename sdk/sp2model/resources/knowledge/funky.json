@@ -1,0 +1,498 @@
+{
+  "success": true,
+  "schemaVersion": "1",
+  "data": {
+    "gameVersion": "0.7.8.103",
+    "source": "native_expression_context",
+    "trigUnit": "degrees",
+    "evaluated": false,
+    "entries": [
+      {
+        "name": "true",
+        "kind": "constant",
+        "value": true
+      },
+      {
+        "name": "false",
+        "kind": "constant",
+        "value": false
+      },
+      {
+        "name": "pi",
+        "kind": "constant",
+        "value": 3.14159274
+      },
+      {
+        "name": "e",
+        "kind": "constant",
+        "value": 0.0
+      },
+      {
+        "name": "ceil",
+        "kind": "function",
+        "returns": "Single",
+        "parameters": [
+          {
+            "name": "f",
+            "type": "Single"
+          }
+        ],
+        "description": "Native function; signature is authoritative. Semantic description not yet curated in v0.1."
+      },
+      {
+        "name": "clamp01",
+        "kind": "function",
+        "returns": "Single",
+        "parameters": [
+          {
+            "name": "value",
+            "type": "Single"
+          }
+        ],
+        "description": "Restrict value to [0,1]."
+      },
+      {
+        "name": "deltaangle",
+        "kind": "function",
+        "returns": "Single",
+        "parameters": [
+          {
+            "name": "current",
+            "type": "Single"
+          },
+          {
+            "name": "target",
+            "type": "Single"
+          }
+        ],
+        "description": "Native function; signature is authoritative. Semantic description not yet curated in v0.1."
+      },
+      {
+        "name": "exp",
+        "kind": "function",
+        "returns": "Single",
+        "parameters": [
+          {
+            "name": "power",
+            "type": "Single"
+          }
+        ],
+        "description": "Native function; signature is authoritative. Semantic description not yet curated in v0.1."
+      },
+      {
+        "name": "floor",
+        "kind": "function",
+        "returns": "Single",
+        "parameters": [
+          {
+            "name": "f",
+            "type": "Single"
+          }
+        ],
+        "description": "Native function; signature is authoritative. Semantic description not yet curated in v0.1."
+      },
+      {
+        "name": "inverselerp",
+        "kind": "function",
+        "returns": "Single",
+        "parameters": [
+          {
+            "name": "a",
+            "type": "Single"
+          },
+          {
+            "name": "b",
+            "type": "Single"
+          },
+          {
+            "name": "value",
+            "type": "Single"
+          }
+        ],
+        "description": "Native function; signature is authoritative. Semantic description not yet curated in v0.1."
+      },
+      {
+        "name": "lerp",
+        "kind": "function",
+        "returns": "Single",
+        "parameters": [
+          {
+            "name": "a",
+            "type": "Single"
+          },
+          {
+            "name": "b",
+            "type": "Single"
+          },
+          {
+            "name": "t",
+            "type": "Single"
+          }
+        ],
+        "description": "Native function; signature is authoritative. Semantic description not yet curated in v0.1."
+      },
+      {
+        "name": "lerpangle",
+        "kind": "function",
+        "returns": "Single",
+        "parameters": [
+          {
+            "name": "a",
+            "type": "Single"
+          },
+          {
+            "name": "b",
+            "type": "Single"
+          },
+          {
+            "name": "t",
+            "type": "Single"
+          }
+        ],
+        "description": "Native function; signature is authoritative. Semantic description not yet curated in v0.1."
+      },
+      {
+        "name": "lerpunclamped",
+        "kind": "function",
+        "returns": "Single",
+        "parameters": [
+          {
+            "name": "a",
+            "type": "Single"
+          },
+          {
+            "name": "b",
+            "type": "Single"
+          },
+          {
+            "name": "t",
+            "type": "Single"
+          }
+        ],
+        "description": "Native function; signature is authoritative. Semantic description not yet curated in v0.1."
+      },
+      {
+        "name": "log10",
+        "kind": "function",
+        "returns": "Single",
+        "parameters": [
+          {
+            "name": "f",
+            "type": "Single"
+          }
+        ],
+        "description": "Native function; signature is authoritative. Semantic description not yet curated in v0.1."
+      },
+      {
+        "name": "pingpong",
+        "kind": "function",
+        "returns": "Single",
+        "parameters": [
+          {
+            "name": "t",
+            "type": "Single"
+          },
+          {
+            "name": "length",
+            "type": "Single"
+          }
+        ],
+        "description": "Native function; signature is authoritative. Semantic description not yet curated in v0.1."
+      },
+      {
+        "name": "pow",
+        "kind": "function",
+        "returns": "Single",
+        "parameters": [
+          {
+            "name": "f",
+            "type": "Single"
+          },
+          {
+            "name": "p",
+            "type": "Single"
+          }
+        ],
+        "description": "Native function; signature is authoritative. Semantic description not yet curated in v0.1."
+      },
+      {
+        "name": "repeat",
+        "kind": "function",
+        "returns": "Single",
+        "parameters": [
+          {
+            "name": "t",
+            "type": "Single"
+          },
+          {
+            "name": "length",
+            "type": "Single"
+          }
+        ],
+        "description": "Native function; signature is authoritative. Semantic description not yet curated in v0.1."
+      },
+      {
+        "name": "round",
+        "kind": "function",
+        "returns": "Single",
+        "parameters": [
+          {
+            "name": "f",
+            "type": "Single"
+          }
+        ],
+        "description": "Native function; signature is authoritative. Semantic description not yet curated in v0.1."
+      },
+      {
+        "name": "sign",
+        "kind": "function",
+        "returns": "Single",
+        "parameters": [
+          {
+            "name": "f",
+            "type": "Single"
+          }
+        ],
+        "description": "Native function; signature is authoritative. Semantic description not yet curated in v0.1."
+      },
+      {
+        "name": "smoothstep",
+        "kind": "function",
+        "returns": "Single",
+        "parameters": [
+          {
+            "name": "from",
+            "type": "Single"
+          },
+          {
+            "name": "to",
+            "type": "Single"
+          },
+          {
+            "name": "t",
+            "type": "Single"
+          }
+        ],
+        "description": "Native function; signature is authoritative. Semantic description not yet curated in v0.1."
+      },
+      {
+        "name": "sqrt",
+        "kind": "function",
+        "returns": "Single",
+        "parameters": [
+          {
+            "name": "f",
+            "type": "Single"
+          }
+        ],
+        "description": "Native function; signature is authoritative. Semantic description not yet curated in v0.1."
+      },
+      {
+        "name": "abs",
+        "kind": "function",
+        "returns": "Single",
+        "parameters": [
+          {
+            "name": "f",
+            "type": "Single"
+          }
+        ],
+        "description": "Native function; signature is authoritative. Semantic description not yet curated in v0.1."
+      },
+      {
+        "name": "clamp",
+        "kind": "function",
+        "returns": "Single",
+        "parameters": [
+          {
+            "name": "value",
+            "type": "Single"
+          },
+          {
+            "name": "min",
+            "type": "Single"
+          },
+          {
+            "name": "max",
+            "type": "Single"
+          }
+        ],
+        "description": "clamp(value,min,max): restrict value to the inclusive range."
+      },
+      {
+        "name": "log",
+        "kind": "function",
+        "returns": "Single",
+        "parameters": [
+          {
+            "name": "f",
+            "type": "Single"
+          },
+          {
+            "name": "p",
+            "type": "Single"
+          }
+        ],
+        "description": "Native function; signature is authoritative. Semantic description not yet curated in v0.1."
+      },
+      {
+        "name": "max",
+        "kind": "function",
+        "returns": "Single",
+        "parameters": [
+          {
+            "name": "a",
+            "type": "Single"
+          },
+          {
+            "name": "b",
+            "type": "Single"
+          }
+        ],
+        "description": "Native function; signature is authoritative. Semantic description not yet curated in v0.1."
+      },
+      {
+        "name": "min",
+        "kind": "function",
+        "returns": "Single",
+        "parameters": [
+          {
+            "name": "a",
+            "type": "Single"
+          },
+          {
+            "name": "b",
+            "type": "Single"
+          }
+        ],
+        "description": "Native function; signature is authoritative. Semantic description not yet curated in v0.1."
+      },
+      {
+        "name": "sin",
+        "kind": "function",
+        "returns": "Single",
+        "parameters": [
+          {
+            "name": "angle",
+            "type": "Single"
+          }
+        ],
+        "description": "Native function; signature is authoritative. Semantic description not yet curated in v0.1."
+      },
+      {
+        "name": "cos",
+        "kind": "function",
+        "returns": "Single",
+        "parameters": [
+          {
+            "name": "angle",
+            "type": "Single"
+          }
+        ],
+        "description": "Native function; signature is authoritative. Semantic description not yet curated in v0.1."
+      },
+      {
+        "name": "tan",
+        "kind": "function",
+        "returns": "Single",
+        "parameters": [
+          {
+            "name": "angle",
+            "type": "Single"
+          }
+        ],
+        "description": "Native function; signature is authoritative. Semantic description not yet curated in v0.1."
+      },
+      {
+        "name": "asin",
+        "kind": "function",
+        "returns": "Single",
+        "parameters": [
+          {
+            "name": "r",
+            "type": "Single"
+          }
+        ],
+        "description": "Native function; signature is authoritative. Semantic description not yet curated in v0.1."
+      },
+      {
+        "name": "acos",
+        "kind": "function",
+        "returns": "Single",
+        "parameters": [
+          {
+            "name": "r",
+            "type": "Single"
+          }
+        ],
+        "description": "Native function; signature is authoritative. Semantic description not yet curated in v0.1."
+      },
+      {
+        "name": "atan",
+        "kind": "function",
+        "returns": "Single",
+        "parameters": [
+          {
+            "name": "r",
+            "type": "Single"
+          }
+        ],
+        "description": "Native function; signature is authoritative. Semantic description not yet curated in v0.1."
+      },
+      {
+        "name": "atan2",
+        "kind": "function",
+        "returns": "Single",
+        "parameters": [
+          {
+            "name": "y",
+            "type": "Single"
+          },
+          {
+            "name": "x",
+            "type": "Single"
+          }
+        ],
+        "description": "Native function; signature is authoritative. Semantic description not yet curated in v0.1."
+      },
+      {
+        "name": "format",
+        "kind": "function",
+        "returns": "String",
+        "parameters": [
+          {
+            "name": "v",
+            "type": "Single"
+          },
+          {
+            "name": "format",
+            "type": "String"
+          }
+        ],
+        "description": "Native function; signature is authoritative. Semantic description not yet curated in v0.1."
+      },
+      {
+        "name": "sum",
+        "kind": "stateful_function",
+        "description": "Time integral of input; stateful."
+      },
+      {
+        "name": "rate",
+        "kind": "stateful_function",
+        "description": "Rate of change of input over time; stateful."
+      },
+      {
+        "name": "PID",
+        "kind": "stateful_function",
+        "description": "Stateful proportional-integral-derivative controller; consult native implementation for parameters."
+      },
+      {
+        "name": "smooth",
+        "kind": "stateful_function",
+        "description": "Move toward input at maxRate per second; stateful, first call returns input."
+      }
+    ]
+  },
+  "operationId": "50d3a0eafabe44b9a63301f8b3b2696b",
+  "instancePid": 30772
+}

@@ -15,6 +15,7 @@ using Assets.Scripts.Craft.Parts.Modifiers.Variables;
 using Assets.Scripts.Design;
 using Assets.Scripts.Design.Tools;
 using Assets.Scripts.Design.UI.Overload;
+using Assets.Scripts.Flight;
 using BepInEx.Logging;
 using HarmonyLib;
 using Cysharp.Threading.Tasks;
@@ -34,6 +35,7 @@ namespace SP2BuildAssistant
         internal ManualLogSource Log;
         internal OperationResults OperationResults;
         private bool busy, uncertain;
+        private JObject modelSymmetryGuard;
         private AircraftScript observedAircraft;
         private string session, fingerprint;
         private long revision;
@@ -48,17 +50,45 @@ namespace SP2BuildAssistant
         private static class PauseDesignerInput { private static bool Prefix() { return !Writing && !AcceptanceInputBlocked; } }
         [HarmonyPatch(typeof(Designer), "HandleInput")]
         private static class PausePointerInput { private static bool Prefix() { return !Writing && !AcceptanceInputBlocked; } }
+        // DesignerScript.Update has keyboard mutation paths after Designer.Update.
+        // Gating only the latter left clone/delete/transform shortcuts active
+        // during atomic settlement and could roll a player's change back.
+        [HarmonyPatch(typeof(DesignerScript), "Update")]
+        private static class PauseDesignerScriptInput { private static bool Prefix() { return !Writing && !AcceptanceInputBlocked; } }
+        [HarmonyPatch(typeof(Designer), "HandleScroll")]
+        private static class PauseScrollInput { private static bool Prefix() { return !Writing && !AcceptanceInputBlocked; } }
+        [HarmonyPatch(typeof(Designer), "HandlePinch")]
+        private static class PausePinchInput { private static bool Prefix() { return !Writing && !AcceptanceInputBlocked; } }
+        [HarmonyPatch(typeof(Designer), "MouseHover")]
+        private static class PauseHoverInput { private static bool Prefix() { return !Writing && !AcceptanceInputBlocked; } }
 
-        private void Update() { if (!busy && Queue.TryDequeue(out Job job)) Execute(job).Forget(); }
+        private void Update()
+        {
+            frameDiagnostics.Sample(System.Diagnostics.Stopwatch.GetTimestamp());
+            SampleInteractiveActivity();
+            DrainDeferredNativeSave();
+            if(!busy && Time.frameCount>inputWindowUntilFrame && Queue.TryDequeue(out Job job)) {
+                string reason;
+                if(!CanDispatchScoped(job,out reason)) {
+                    JobDiagnostics.Update(job.Id,new JObject{["interactiveScheduling"]=InteractiveSchedulingView(),["waitingForUserInteraction"]=true,["pauseReason"]=reason});
+                    Queue.Enqueue(job);
+                } else {
+                    JobDiagnostics.Update(job.Id,new JObject{["waitingForUserInteraction"]=false});
+                    Execute(job).Forget();
+                }
+            }
+        }
         private async UniTaskVoid Execute(Job job)
         {
             busy = true;
             lock (job.Sync)
             {
-                if (job.CancelRequested) { job.Complete(Json.Fail(new ApiError("cancelled", "Cancelled before execution."))); busy = false; return; }
+                if (job.CancelRequested && !scopedRuns.ContainsKey(job.Id)) { job.Complete(Json.Fail(new ApiError("cancelled", "Cancelled before execution."))); recoveryLeases.Release(job.Id); busy = false; return; }
                 job.State = "running";
             }
             JObject result;
+            var executionClock=System.Diagnostics.Stopwatch.StartNew();
+            JobDiagnostics.Update(job.Id,new JObject{["lastStartedFrame"]=Time.frameCount,["queueElapsedMs"]=(DateTime.UtcNow-job.Created).TotalMilliseconds});
             try
             {
                 string command = Required(job.Input, "command");
@@ -72,18 +102,34 @@ namespace SP2BuildAssistant
                 else if (command == "designer.capture") result = Json.Ok(await DesignerCapture(args, job));
                 else if (command == "craft.centers") result = Json.Ok(await CraftCenters(args, job));
                 else if(new[]{"geometry.measure","geometry.section","geometry.seam","geometry.symmetry"}.Contains(command))result=Json.Ok(await GeometryQuery(command,args,job));
+                else if(command=="scoped.batch.apply")result=await ScopedBatchStep(args,job);
                 else if (command == "batch.apply" || command == "craft.undo" || command == "craft.rollback")
                     result = await Mutate(command, args, job);
-                else result = Json.Ok(Read(command, args));
+                else result = Json.Ok(Read(command, args, job.Id));
             }
             catch (Exception e) { result = Json.Fail(e); Log.LogWarning("Command failed: " + e.Message); }
-            job.Complete(result);
+            JobDiagnostics.Update(job.Id,new JObject{["lastDispatchElapsedMs"]=executionClock.Elapsed.TotalMilliseconds,["lastEndedFrame"]=Time.frameCount,["frameDiagnostics"]=frameDiagnostics.View()});
+            if(result==null){lock(job.Sync)job.State="queued";Queue.Enqueue(job);}
+            else {job.Complete(result);recoveryLeases.Release(job.Id);}
             busy = false;
+        }
+        private static bool DesignerReady(string scene = null)
+        {
+            scene = scene ?? UnityEngine.SceneManagement.SceneManager.GetActiveScene().name;
+            var d = Designer.Instance;
+            // Do not access lazy Game.Instance during Startup. A live native
+            // designer instance is required before consulting its scene manager.
+            bool active = d != null && d.DesignerScript != null && d.DesignerScript.isActiveAndEnabled;
+            bool aircraft = active && d.Aircraft != null && d.Aircraft.gameObject.activeInHierarchy;
+            if (!aircraft) return false;
+            return DesignerModeState.Ready(scene, active, aircraft,
+                scene == "Terrain" && FlightSceneScript.Instance?.Designer?.Active == true,
+                SP2Game.Instance.SceneManager.SceneTransitionInProgress);
         }
         private Designer Current()
         {
             var d = Designer.Instance;
-            if (d == null || d.Aircraft == null || !d.Aircraft.gameObject.activeInHierarchy)
+            if (!DesignerReady())
                 throw new ApiError("designer_not_ready", "Enter the designer and open an aircraft before inspecting or editing its parts.");
             return d;
         }
@@ -95,26 +141,38 @@ namespace SP2BuildAssistant
             if (observedAircraft != d.Aircraft)
             {
                 observedAircraft = d.Aircraft; session = Guid.NewGuid().ToString("N"); revision = 1;
-                checkpoints.Clear(); checkpointInfo.Clear(); operations.Clear(); nativeRotations.Clear(); uncertain = false;
+                modelLifetimes.Clear();
+                checkpoints.Clear(); checkpointInfo.Clear(); operations.Clear(); nativeRotations.Clear(); scopeLeases.Clear(); uncertain = false;
+                ObserveModelLifetimes();
             }
-            else if (hash != fingerprint) revision++;
+            else
+            {
+                ObserveModelLifetimes();
+                string lifetimes=string.Join(";",modelLifetimes.OrderBy(pair=>pair.Key).Select(pair=>pair.Key+":"+pair.Value.Value));
+                // Delete/recreate may yield byte-identical XML and reuse the
+                // numeric ID. It is still a new object and expires old plans.
+                if(hash!=fingerprint||lifetimes!=observedModelLifetimes)revision++;
+            }
+            observedModelLifetimes=string.Join(";",modelLifetimes.OrderBy(pair=>pair.Key).Select(pair=>pair.Key+":"+pair.Value.Value));
             fingerprint = hash; RememberRotations(xml,hash);
             return xml;
         }
         private object Identity() { return new { craftSessionId = session, revision, fingerprint, fingerprintAlgorithm = SnapshotState.Algorithm, gameVersion = SP2Game.Version.ToString(), xmlVersion = AircraftData.CurrentXmlVersion, stateUncertain = uncertain }; }
-        private object Read(string cmd, JObject a)
+        private object Read(string cmd, JObject a, string operationId=null)
         {
+            if(cmd=="craft.status")return ModelStatus();
             if (cmd == "capabilities" || cmd == "designer.status")
             {
                 // Game.Instance is lazy: querying status during Startup must
                 // not construct it before native runtime initialization.
                 string nativeScene=UnityEngine.SceneManagement.SceneManager.GetActiveScene().name;
-                bool ready = nativeScene=="Designer" && Designer.Instance != null && Designer.Instance.Aircraft != null;
+                bool ready = DesignerReady(nativeScene);
                 if (ready) Observe();
                 AcceptanceMemoryInventory();
-                return new { pluginVersion = "0.5.0", releaseStatus = "released", registryVersion=PropertyRegistry.Version, buildId = typeof(BuildRuntime).Assembly.ManifestModule.ModuleVersionId.ToString(), gameVersion = SP2Game.Version.ToString(), designerReady = ready,
-                    identity = ready ? Identity() : null, target = "current_open_designer_only", acceptanceNative=AcceptanceNativeCapability(),
-                    scene=nativeScene,designerControl=DesignerControlCapability(),
+                return new { pluginVersion = "0.7.8", releaseStatus = "development", modelingSdk = new { route="agent-sdk", version="0.7.8a1", contract="sp2model/1", scope=ModelScope.Version, bindingContent=ModelBindingContent.Algorithm, features=new[]{"explicit-plan","logical-project","native-group-copy","native-group-mirror","native-hole","palette-clone","finite-mesh-verification","read-only-request-recovery","compact-status","paged-parts","native-state-attributes","explicit-checkpoint-recovery"} }, registryVersion=PropertyRegistry.Version, buildId = typeof(BuildRuntime).Assembly.ManifestModule.ModuleVersionId.ToString(), gameVersion = SP2Game.Version.ToString(), designerReady = ready,
+                    identity = ready ? Identity() : null, target = "current_open_designer_only", acceptanceNative=AcceptanceNativeCapability(), scheduling=SchedulingCapability(),
+                    scene=nativeScene,designerMode=DesignerModeState.Mode(nativeScene,ready),designerControl=DesignerControlCapability(),
+                    interactiveScheduling=InteractiveSchedulingView(),nativeInputSafety=NativeInputSafetyView(),
                     fuselageCrossSectionAttributes = CrossSectionAttributes,
                     fuselageStateAttributes = ExtendedStateAttributes,
                     inputControllerEditing = InputControllerFields.Description(),
@@ -132,9 +190,9 @@ namespace SP2BuildAssistant
                             monoUsedBytes = UnityEngine.Profiling.Profiler.GetMonoUsedSizeLong(), monoHeapBytes = UnityEngine.Profiling.Profiler.GetMonoHeapSizeLong(),
                             graphicsDriverAllocatedBytes = UnityEngine.Profiling.Profiler.GetAllocatedMemoryForGraphicsDriver() },
                         meaning = "Diagnostic counts and sampled bytes without forcing garbage collection. Native undo bytes cover XML byte arrays, not all object overhead. Unity counters have overlapping scopes, may report zero on unsupported platforms, and must not be summed or equated with OS private bytes or proof of leak freedom." },
-                    commands = new[] { "designer.crafts", "designer.control", "properties.describe", "properties.get", "resources.list", "appearance.get", "groups.resolve", "decal.pose.get", "geometry.measure", "geometry.section", "geometry.seam", "geometry.symmetry", "craft.diff", "craft.snapshot", "parts.list", "parts.get", "parts.assembly", "connections.list", "connections.points", "spatial.query",
+                    commands = new[] { "craft.status", "parts.query", "native.state", "model.dependencies", "mechanical.get", "wing.stations", "airfoils.describe", "logic.dependencies", "craft.checkpoint.prune", "designer.crafts", "designer.control", "properties.describe", "properties.get", "resources.list", "appearance.get", "groups.resolve", "decal.pose.get", "geometry.measure", "geometry.section", "geometry.seam", "geometry.symmetry", "craft.diff", "craft.snapshot", "parts.list", "parts.get", "parts.assembly", "connections.list", "connections.points", "spatial.query",
                         "catalog.categories", "catalog.subcategories", "catalog.list", "catalog.search", "catalog.get", "catalog.schema", "catalog.export",
-                        "outputs.list", "variables.list", "funky.list", "funky.describe", "funky.validate", "batch.preview", "batch.apply",
+                        "outputs.list", "variables.list", "funky.list", "funky.describe", "funky.validate", "batch.preview", "batch.apply", "scope.capture", "scope.get", "scope.release", "scoped.batch.apply",
                         "craft.history", "craft.undo", "craft.checkpoint.create", "craft.checkpoint.list", "craft.checkpoint.get", "craft.rollback",
                         "designer.selection", "parts.geometry", "designer.raycast", "designer.capture", "shape.get", "shape.schema", "symmetry.get", "visual.resolve", "visual.capture", "visual.pick", "craft.centers" },
                     designerCapture = new { backend="native_designer_camera", nativeMaterials=true, includesUi=false, includesGizmos=(bool?)null, gizmoPolicy="native_scene_helpers_preserved_separate_overlay_cameras_excluded", preservesPlayerCamera=true,
@@ -149,6 +207,7 @@ namespace SP2BuildAssistant
                     limitations = new[] { "Typed shape updates support JFuselage, JWing and native control surfaces; query shape.schema for exact coverage.",
                         "Mod-specific behavior is not fully certified.", "No offline saved-aircraft operations, telemetry evaluation or persistent cross-restart checkpoints." } };
             }
+            if(new[]{"scope.capture","scope.get","scope.release"}.Contains(cmd))return ScopeRead(cmd,a);
             if (cmd=="designer.crafts")return DesignerCrafts(a);
             if (cmd.StartsWith("catalog.")) return Catalog(cmd, a);
             if (cmd=="properties.describe" || cmd=="properties.get") { Observe(); return PropertiesRead(cmd,a); }
@@ -157,6 +216,13 @@ namespace SP2BuildAssistant
             if (cmd == "visual.resolve") return VisualResolve(a);
             XElement xml = Observe();
             var d = Current();
+            if(cmd=="parts.query")return ModelQuery(a);
+            if(cmd=="model.dependencies")return ModelDependencies(a);
+            if(cmd=="native.state")return NativeStateRead(a);
+            if(cmd=="mechanical.get")return MechanicalInfo(Part(Int(a,"id")));
+            if(cmd=="wing.stations")return WingStations(a);
+            if(cmd=="airfoils.describe")return AirfoilInfo(a);
+            if(cmd=="logic.dependencies")return LogicDependencies(a);
             if (IsAdvancedRead(cmd)) return AdvancedRead(cmd, a);
             if(cmd=="appearance.get")return AppearanceGet(a);
             if(cmd=="resources.list")return ResourcesList(a);
@@ -170,6 +236,8 @@ namespace SP2BuildAssistant
                     ["parts"] = new JArray(d.Aircraft.Aircraft.Assembly.Parts.Select(p => PartInfo(p, false))),
                     ["connections"] = Node(xml.Element("Assembly")?.Element("Connections")),
                     ["variables"] = Node(xml.Element("Variables")), ["coordinateSystem"] = "Unity world; metres; Euler degrees; quaternion x,y,z,w" };
+                var craftTransform=d.Aircraft.MainCockpit.transform;
+                result["craftFrame"]=new JObject{["kind"]="custom",["position"]=JArray.FromObject(Vec(craftTransform.position)),["rotationQuaternion"]=new JArray(craftTransform.rotation.x,craftTransform.rotation.y,craftTransform.rotation.z,craftTransform.rotation.w),["source"]="native_main_cockpit_rigid_frame"};
                 if (a.Value<bool?>("includeXml") == true) {
                     result["xml"] = xml.ToString(SaveOptions.DisableFormatting);
                     result["xmlMetadataCaveat"]="Aircraft size/boundsMin/boundsOffset are native save-time metadata and may lag current part geometry. The XML preserves those values unchanged. Use parts.geometry or a same-revision visual capture for current bounds; do not infer live craft dimensions from these XML attributes.";
@@ -215,9 +283,30 @@ namespace SP2BuildAssistant
             if (cmd == "funky.validate")
             {
                 string expression = Required(a, "expression");
-                if ((string)a["type"] == "bool") Parser.Process<bool>(expression, d.Aircraft.ExpressionContext);
-                else Parser.Process<float>(expression, d.Aircraft.ExpressionContext);
-                return new { identity = Identity(), valid = true, compiledOnly = true, evaluated = false };
+                string type=(string)a["type"]??"float",field=(string)a["field"];
+                var part=a["partId"]==null?null:Part(Int(a,"partId"));
+                if(a["controllerIndex"]!=null){
+                    if(part==null)throw new ApiError("invalid_input","A controller context requires partId.");
+                    int index=Int(a,"controllerIndex");
+                    if(index<0||index>=part.Modifiers.OfType<InputControllerData>().Count())throw new ApiError("controller_not_found","The current part has no such input controller.");
+                }
+                try{
+                    if(field=="input"||field=="activationGroup"){
+                        if(part==null)throw new ApiError("invalid_input","Native input fields require their part context.");
+                        string expected=field=="input"?"float":"bool";
+                        if(a["type"]!=null&&type!=expected)throw new ApiError("invalid_expression_type","The selected native input field expects "+expected+".");
+                        type=expected;
+                        ValidateInputControllerExpression(part,field,expression);
+                    }else{
+                        var context=part==null?d.Aircraft.ExpressionContext:part.PartScript.ExpressionContext;
+                        if(type=="bool")Parser.Process<bool>(expression,context);
+                        else if(type=="float")Parser.Process<float>(expression,context);
+                        else if(type=="string")Parser.Process<string>(expression,context);
+                        else throw new ApiError("invalid_expression_type","Supported native expected types: float, bool, string.");
+                    }
+                }catch(ApiError){throw;}catch(Exception e){throw new ApiError("invalid_expression",e.GetBaseException().Message,new JObject{["partId"]=part==null?(JToken)null:part.Id,["controllerIndex"]=a["controllerIndex"]?.DeepClone(),["field"]=field,["expectedType"]=type,["nativeErrorType"]=e.GetBaseException().GetType().FullName});}
+                return new { identity = Identity(), valid = true, compiledOnly = true, evaluated = false, partId=part==null?(int?)null:part.Id,
+                    contextKind=field=="input"?"native_axis_resolver_with_part_context":part==null?"native_aircraft_context":"native_part_context",expectedType=type,field };
             }
             if(cmd=="craft.diff") {
                 string id=Required(a,"checkpointId");
@@ -227,13 +316,11 @@ namespace SP2BuildAssistant
             if (cmd == "craft.checkpoint.create")
             {
                 Guard(a);
-                if (checkpoints.Count >= 64) throw new ApiError("checkpoint_capacity", "Maximum 64 checkpoints per open craft session.");
                 string id = Guid.NewGuid().ToString("N");
-                checkpoints.Add(id, new XElement(xml));
-                var info = new { id, name = (string)a["name"] ?? id, craftSessionId = session, revision, fingerprint, createdAt = DateTime.UtcNow.ToString("o") };
-                checkpointInfo.Add(id, info); return info;
+                return AddCheckpoint(id,(string)a["name"]??id,xml,revision,fingerprint,"manual",a.Value<bool?>("pinned")??true,operationId);
             }
-            if (cmd == "craft.checkpoint.list") return new { identity = Identity(), checkpoints = checkpointInfo.Values.ToArray() };
+            if(cmd=="craft.checkpoint.prune")return CheckpointPrune(a);
+            if (cmd == "craft.checkpoint.list") return new { identity = Identity(), checkpoints = checkpointInfo.Values.ToArray(), capacity=CheckpointCapacity() };
             if (cmd == "craft.checkpoint.get")
             {
                 string id = Required(a, "id");
@@ -259,15 +346,23 @@ namespace SP2BuildAssistant
         {
             var ops = a["operations"] as JArray;
             if (ops == null || ops.Count == 0 || ops.Count > 100) throw new ApiError("invalid_batch", "operations must contain 1..100 operations.");
-            var kinds = new[] { "part.add", "part.update", "part.delete", "connection.connect", "connection.disconnect", "variable.add", "variable.update", "variable.delete", "variable.reorder", "output.bind", "output.update", "output.unbind", "craft.refresh", "shape.update", "wing.control.add", "fuselage.match", "symmetry.link", "symmetry.unlink", "symmetry.create", "symmetry.enable" };
+            var kinds = new[] { "mechanical.update", "native.state", "part.retype", "part.add", "part.clone", "part.mirror", "connection.auto", "hole.create", "hole.update", "part.update", "part.delete", "connection.connect", "connection.disconnect", "variable.add", "variable.update", "variable.delete", "variable.reorder", "output.bind", "output.update", "output.unbind", "craft.refresh", "shape.update", "wing.control.add", "fuselage.match", "symmetry.link", "symmetry.unlink", "symmetry.create", "symmetry.enable" };
             foreach (JToken token in ops) {
                 var op = token as JObject; if (op == null || !(kinds.Contains(Required(op, "kind")) || new[]{"properties.set","appearance.set","transform.apply","transform.align","decal.pose.set"}.Contains((string)op["kind"]))) throw new ApiError("unsupported_operation", "Unsupported operation kind.");
                 ValidateOperationFields(op);
             }
         }
-        private async UniTask<JObject> Mutate(string command, JObject a, Job job)
+        private async UniTask<JObject> Mutate(string command, JObject a, Job job,Action<XElement> scopedPostcondition=null)
         {
             Observe(); Guard(a, command == "craft.rollback");
+            // Detect incompatible restore APIs before any operation or rollback
+            // can touch the player's craft, rather than failing during JIT/rebuild.
+            try
+            {
+                NativeModifierState.Validate(typeof(Assets.Scripts.Craft.Parts.Modifiers.PartModifierData));
+                NativeModifierState.Validate(typeof(Assets.Scripts.Craft.Parts.Modifiers.ControlSurfacePartData));
+            }
+            catch (MissingMethodException error) { throw new ApiError("unsupported_native_api", error.Message); }
             if (string.IsNullOrEmpty(job.Key)) throw new ApiError("request_id_required", "Writes require an outer requestId for retry safety.");
             var d = Current();
             if (command == "batch.apply") CheckBatch(a);
@@ -276,16 +371,39 @@ namespace SP2BuildAssistant
             await d.UndoHistory.CompletePendingOperations();
             XElement before = Observe(); Guard(a, command == "craft.rollback");
             var priorHead = await d.UndoHistory.GetCurrentUndoStep();
+            if((string)job.Input["command"]=="scoped.batch.apply") {
+                lock(job.Sync)if(job.CancelRequested)throw new ApiError("cancelled","Cancelled before atomic entry; completed chunks remain committed.");
+                // History awaits can span an input frame. Recheck gestures and
+                // text focus immediately before entering the atomic boundary;
+                // a newly started gesture need not have changed XML yet.
+                SampleInteractiveActivity();string pause;
+                if(!CanDispatchScoped(job,out pause,false))throw new ScopedYieldSignal(pause);
+            }
+            // Native history APIs may yield. Do not start from a stale baseline
+            // if the player edited during that wait before the atomic boundary.
+            before=Observe();Guard(a,command=="craft.rollback");
             if (command == "craft.undo")
             {
                 if (!d.UndoHistory.UndoStepsAvailable) throw new ApiError("undo_unavailable", "No previous native history step.");
                 string expected = (string)a["expectedHeadHash"];
                 if (expected != null && expected != BitConverter.ToString(priorHead.Hash).Replace("-", "").ToLowerInvariant()) throw new ApiError("history_conflict", "History head changed.");
             }
+            ModelScope modelScope=null;
+            JObject expectedModelSymmetry=null;
+            if(a["modelScope"]!=null){
+                if(command!="batch.apply")throw new ApiError("invalid_model_scope","Model scope is valid only for batch.apply.");
+                modelScope=new ModelScope(before,a["modelScope"] as JObject,Current().Aircraft.Aircraft.CurrentTheme.GenerateXml());
+                modelScope.ValidateOperations(a["operations"] as JArray);
+                if(((JArray)a["operations"]).Any(op=>new[]{"symmetry.create","part.mirror"}.Contains((string)op["kind"]))) {
+                    expectedModelSymmetry=a["modelExpectedSymmetry"] as JObject;
+                    ValidateModelSymmetry(expectedModelSymmetry);
+                }
+            }
             var events = EventSystem.current;
             bool oldEventsEnabled = events != null && events.enabled;
             if (events != null) events.enabled = false;
             Writing = true;
+            modelSymmetryGuard=expectedModelSymmetry;
             selectionCaptured = false; CaptureSelection(d);
             wingsToValidate.Clear();
             requiredPoses.Clear();
@@ -295,6 +413,7 @@ namespace SP2BuildAssistant
             string beforeHash = fingerprint;
             long beforeRevision = revision;
             bool beforeUncertain = uncertain;
+            var beforeModelLifetimes=modelLifetimes.ToDictionary(pair=>pair.Key,pair=>pair.Value.Value);
             var recoveryHead = priorHead;
             XElement restorationTarget = null;
             try
@@ -329,6 +448,8 @@ namespace SP2BuildAssistant
                 // Native geometry/intersection queues finish after Update, sometimes
                 // across several physics frames. Do not validate a partially rebuilt craft.
                 await ReadSettled(d, restorationTarget);
+                var carverRefresh = RefreshMovedCarverTargets(d, before);
+                if (carverRefresh.Count > 0) await ReadSettled(d, restorationTarget);
                 stage("firstSettleMs");
                 ValidateEditedWings();
                 ValidateRequiredPoses();
@@ -341,10 +462,14 @@ namespace SP2BuildAssistant
                 EnsureDesignerSceneIntegrity(d);
                 if (retainedSelection.HasValue && refs.WasDeleted(retainedSelection.Value)) d.SelectedPart = null;
                 AcceptanceFault("before_commit");
+                if(scopedPostcondition!=null)scopedPostcondition(d.Aircraft.Aircraft.GenerateXml(false));
+                if(modelScope!=null)modelScope.Validate(d.Aircraft.Aircraft.GenerateXml(false));
                 if (command != "craft.undo") await d.CreateUndoStepAsync("SP2Build " + job.Id.Substring(0, 8));
                 AcceptanceFault("after_commit");
                 RefreshSelectedPropertyWidgets(d);
                 XElement readback = Observe();
+                if(scopedPostcondition!=null)scopedPostcondition(readback);
+                if(modelScope!=null)modelScope.Validate(readback);
                 stage("historyAndReadbackMs");
                 foreach(JObject row in changed.Where(x=>(string)x["kind"]=="properties.set")){
                     var p=d.Aircraft.Aircraft.Assembly.GetPartById((int)row["partId"]);
@@ -354,17 +479,31 @@ namespace SP2BuildAssistant
                         if(finalFields.TryGetValue((string)field["propertyId"],out entry)){field["effective"]=PropertyValues.Read(entry.RawValue());field["valueStage"]="final_settled_batch";field["normalizationReason"]=JToken.DeepEquals(field["requested"],field["effective"])?null:"Final native state differs from requested representation or was superseded by a later operation.";}
                     }
                 }
+                foreach(JObject row in changed.Where(x=>new[]{"native.state","mechanical.update","shape.update"}.Contains((string)x["kind"]))) {
+                    var p=d.Aircraft.Aircraft.Assembly.GetPartById((int)row["partId"]);
+                    row["valueStage"]="immediate_before_native_settle";
+                    if(p==null||refs.WasDeleted((int)row["partId"])) {row["supersededByLaterOperation"]=true;continue;}
+                    row["finalState"]=Node(p.GenerateXml());row["finalValueStage"]="final_settled_batch";
+                    if((string)row["kind"]=="mechanical.update")row["finalMechanical"]=MechanicalInfo(p);
+                    if((string)row["kind"]=="shape.update")row["finalShape"]=ShapeInfo(p);
+                }
                 bool restorationVerified = restorationTarget == null || SnapshotState.EquivalentAfterNativeRestore(restorationTarget, readback);
                 if (!restorationVerified) throw new ApiError("restore_mismatch", "Native restore changed fields beyond the documented Euler reconstruction tolerance.");
                 if (command == "craft.rollback") uncertain = false;
-                string automaticId = "before-" + job.Id;
-                if (checkpoints.Count < 64) { checkpoints[automaticId] = new XElement(before); checkpointInfo[automaticId] = new { id = automaticId, name = "Before " + job.Id, craftSessionId = session, fingerprint = beforeHash }; }
-                var data = new { identity = Identity(), operationId = job.Id, actualChanges = changed, temporaryIds = refs.LiveBindings, rebuildCount, stageTimings=timings, effectiveChanges=CraftDiff.Compare(before,readback),
+                RebindUnchangedScopes(before,readback);
+                // A scoped job calls Mutate once per atomic chunk. The outer
+                // operation/request remains stable, while each before-state
+                // needs its own checkpoint, including no-op chunks whose
+                // revision may be identical. Do not overwrite earlier history.
+                string automaticId = "before-" + job.Id + "-" + Guid.NewGuid().ToString("N");
+                if(checkpoints.Count<64||checkpointInfo.Any(p=>p.Key!=(string)a["checkpointId"]&&JObject.FromObject(p.Value).Value<bool?>("pinned")==false))
+                    AddCheckpoint(automaticId,"Before "+job.Id,before,beforeRevision,beforeHash,"automatic",false,job.Id,command=="craft.rollback"?(string)a["checkpointId"]:null);
+                var data = new { identity = Identity(), operationId = job.Id, actualChanges = changed, temporaryIds = refs.LiveBindings, rebuildCount, stageTimings=timings, effectiveChanges=CraftDiff.Compare(before,readback), carverRefresh,
                     reusedPartIds = refs.ReusedPartIds, invalidatedTemporaryIds = refs.InvalidatedBindings,
                     beforeCheckpointId = checkpoints.ContainsKey(automaticId) ? automaticId : null,
                     validation = new { readBack = true, expressionCompile = true, geometryRefreshed = true, physicsSynchronized = true, editorCachesRebuilt = true, partCount = d.Aircraft.Aircraft.Assembly.Parts.Count,
                         sceneIntegrityVerified = true, restorationVerified = restorationTarget == null ? (bool?)null : restorationVerified, restoreEulerToleranceDegrees = SnapshotState.RestoreEulerToleranceDegrees, retainedNativeCaches=new JArray(retainedRestoreCaches) },
-                    rollbackResult = new { required = false }, selectedPartId = d.SelectedPart == null ? (int?)null : d.SelectedPart.Part.Id };
+                    rollbackResult = new { required = false }, restoration=RestorationReport(restorationTarget,readback), checkpointCapacity=CheckpointCapacity(), selectedPartId = d.SelectedPart == null ? (int?)null : d.SelectedPart.Part.Id };
                 operations.Add(new { operationId = job.Id, command, revision, beforeFingerprint = beforeHash, fingerprint });
                 return Json.Ok(data);
             }
@@ -380,10 +519,13 @@ namespace SP2BuildAssistant
                     ValidateDesignerExpressions(d.Aircraft);
                     if (recoveryHead != null) await d.UndoHistory.SetCurrentUndoStep(recoveryHead);
                     await ReadSettled(d, before);
+                    if (RefreshMovedCarverTargets(d, null).Count > 0) await ReadSettled(d, before);
                     RefreshEditorGeometry(d);
                     RestoreSelection(d);
                     EnsureDesignerSceneIntegrity(d);
                     XElement recovered = Observe(); restored = SnapshotState.EquivalentAfterNativeRestore(before, recovered);
+                    if(restored)foreach(var part in d.Aircraft.Aircraft.Assembly.Parts){string token;if(beforeModelLifetimes.TryGetValue(part.Id,out token))modelLifetimes[part.Id]=new KeyValuePair<PartData,string>(part,token);}
+                    if(restored)RebindUnchangedScopes(before,recovered);
                     if (!restored) recoveryError = "Native normalization differs from the starting snapshot; inspect readback.";
                 }
                 catch (Exception recovery) { recoveryError = recovery.Message; }
@@ -398,12 +540,19 @@ namespace SP2BuildAssistant
                     ["revisionMeaning"] = "Failure does not freeze revision: native recovery can change serialized Euler angles within tolerance. Use returned identity; never blindly reuse the previous revision.",
                     ["readBack"] = recoveryReadback, ["restoreEulerToleranceDegrees"] = SnapshotState.RestoreEulerToleranceDegrees, ["fingerprintIdentical"] = recoveryReadback?(JToken)(fingerprint == beforeHash):null, ["beforeFingerprint"] = beforeHash, ["currentFingerprint"] = recoveryReadback?fingerprint:null };
                 result["rollbackResult"]["retainedNativeCaches"]=new JArray(retainedRestoreCaches);
+                result["rollbackResult"]["restoration"]=RestorationReport(before,recoveryReadback?d.Aircraft.Aircraft.GenerateXml(false):null);
                 result["identity"] = JToken.FromObject(Identity());
                 return result;
             }
-            finally { Writing = false; selectionCaptured = false; wingsToValidate.Clear(); requiredPoses.Clear(); retainedRestoreCaches.Clear(); if (events != null) events.enabled = oldEventsEnabled; }
+            finally { Writing = false; modelSymmetryGuard=null; selectionCaptured = false; wingsToValidate.Clear(); requiredPoses.Clear(); retainedRestoreCaches.Clear(); if (events != null) events.enabled = oldEventsEnabled; MarkInteractiveChunkCompleted(); }
         }
-        private void TrackInternal() { observedAircraft = Current().Aircraft; }
+        private void ValidateModelSymmetry(JObject expected)
+        {
+            var actual=JObject.FromObject(SymmetryConfiguration());
+            if(expected==null||expected["mode"]?.Type!=JTokenType.String||(string)expected["mode"]!="Mirrored"||new[]{"mode","mirrorPlaneNormal","mirrorPlaneDistance","disabledForNewParts","originPartId","aircraftMirrorPlaneOffset"}.Any(key=>!JToken.DeepEquals(expected[key],actual[key])))
+                throw new ApiError("model_symmetry_conflict","Native symmetry changed after preview or an earlier operation. Re-preview the mirror plane before applying.");
+        }
+        private void TrackInternal() { observedAircraft = Current().Aircraft;ObserveModelLifetimes(true); }
         private async UniTask ReadSettled(Designer designer, XElement expected)
         {
             string previous = null; int stableFrames = 0; XElement last=null;bool pending=true;int frames=0;bool cachesRetained=false;
@@ -485,8 +634,16 @@ namespace SP2BuildAssistant
             if((string)op["kind"]=="part.update"&&(op["changes"] as JArray)?.Any(c=>((string)c["path"]=="Part"||c["path"]==null)&&new[]{"position","rotation"}.Contains((string)c["attribute"]))==true){
                 var p=Part(refs.Resolve(op["partId"]));requiredPoses.Remove(p.Id);foreach(var peer in SymmetricTargets(p,op.Value<bool?>("symmetric")??false))requiredPoses.Remove(peer.Id);
             }
-            var change = ApplyCore(op, refs);
+            JObject change;
+            try{change=ApplyCore(op,refs);}
+            catch(ApiError error){
+                if(error.Details==null)error.Details=new JObject();
+                error.Details["operationIndex"]=refs.OperationIndex;error.Details["operationKind"]=(string)op["kind"];
+                error.Details["targetReference"]=(op["partId"]??op["partIds"]??op["targetPartIds"]??op["wingPartId"]??op["partA"])?.DeepClone();
+                throw;
+            }
             int[] removed = refs.Observe(ReferenceParts());
+            foreach(int removedId in removed)modelLifetimes.Remove(removedId);
             foreach(int id in removed)requiredPoses.Remove(id);
             if (removed.Length > 0 && change["deletedPartIds"] == null) change["deletedPartIds"] = new JArray(removed);
             return change;
@@ -494,8 +651,28 @@ namespace SP2BuildAssistant
         private JObject ApplyCore(JObject op, BatchReferences refs)
         {
             string kind = Required(op, "kind"); var d = Current();
+            if(kind=="part.mirror"){if(modelSymmetryGuard!=null)ValidateModelSymmetry(modelSymmetryGuard);return MirrorModelParts(op,refs);}
+            if(kind=="part.clone")return CloneModelParts(op,refs);
+            if(kind=="connection.auto")return AutoModelConnection(op,refs);
+            if(kind=="native.state")return NativeStateApply(op,refs);
+            if(kind=="mechanical.update")return MechanicalUpdate(op,refs);
+            if(kind=="part.retype")return RetypeNativePart(op,refs);
+            if(kind.StartsWith("variable.")){
+                var state=Current().Aircraft.Aircraft.GenerateXml(false);EditSetter(state,kind,op);
+                var setters=(state.Element("Variables")?.Elements("Setter")??Enumerable.Empty<XElement>()).Select(VariableSetter.LoadFromXml).Where(s=>s!=null).ToArray();
+                Current().Aircraft.Aircraft.VariableSetters.Clear();Current().Aircraft.Aircraft.VariableSetters.AddRange(setters);
+                Current().Aircraft.VariableSystem.RefreshVariables();
+                return new JObject{["kind"]=kind,["setters"]=ReadModels.Setters(state.Element("Variables")),["evaluation"]= "not_performed"};
+            }
+            if(kind.StartsWith("output.")){
+                var part=Part(refs.Resolve(op["partId"]));var state=Current().Aircraft.Aircraft.GenerateXml(false);EditOutput(state,part,kind,op);
+                ReinitializeNativePart(part,XmlPart(state,part.Id),false);Current().Aircraft.VariableSystem.RefreshVariables();
+                return new JObject{["kind"]=kind,["partId"]=part.Id,["outputs"]=Outputs(part),["evaluation"]="not_performed"};
+            }
+            if(kind=="hole.create"||kind=="hole.update")return ModelHole(op,refs);
+            if(kind=="symmetry.create"&&modelSymmetryGuard!=null)ValidateModelSymmetry(modelSymmetryGuard);
             if (kind=="properties.set") return PropertiesSet(op,refs);
-            if (kind=="appearance.set") return AppearanceSet(op);
+            if (kind=="appearance.set") return AppearanceSet(op,refs:refs);
             if (kind=="transform.apply") return TransformApply(op,refs);
             if (kind=="transform.align") return TransformAlign(op,refs);
             if (kind=="decal.pose.set") return DecalPoseSet(op,refs);
@@ -504,7 +681,16 @@ namespace SP2BuildAssistant
             {
                 DesignerPart template = FindTemplate(Required(op, "templateId"));
                 if (!Creatable(template)) throw new ApiError("part_restricted", "Template is not creatable in this level.");
-                var assembly = new AssemblyData(new XElement(template.AssemblyElement), AircraftData.CurrentXmlVersion, CraftLoadContext.Designer);
+                var templateXml=new XElement(template.AssemblyElement);
+                if(op["rootOnly"]!=null&&op["rootOnly"].Type!=JTokenType.Boolean)throw new ApiError("invalid_input","rootOnly must be a boolean.");
+                if(op.Value<bool?>("rootOnly")==true){
+                    var rootPart=templateXml.Element("Parts")?.Elements("Part").FirstOrDefault();
+                    if(rootPart==null||!new[]{"JFuselage-1","JFuselage-Cone-1","JFuselage-2","JWing-1"}.Contains((string)rootPart.Attribute("partType")))
+                        throw new ApiError("unsupported_template","rootOnly supports certified native fuselage and wing roots only.");
+                    templateXml.Element("Parts").Elements("Part").Skip(1).Remove();
+                    templateXml.Element("Connections")?.RemoveNodes();
+                }
+                var assembly = new AssemblyData(templateXml, AircraftData.CurrentXmlVersion, CraftLoadContext.Designer);
                 var newParts = assembly.Parts.ToList();
                 assembly.CreateGameObjects(d.Aircraft, CreationInfo(), d.Aircraft.Children);
                 Vector3 origin = newParts[0].PartScript.transform.position;
@@ -520,7 +706,7 @@ namespace SP2BuildAssistant
                 string temp = (string)op["temporaryId"];
                 if (!string.IsNullOrEmpty(temp))
                 { if (refs.ContainsKey(temp)) throw new ApiError("duplicate_temporary_id", "Duplicate temporary ID."); refs.Add(temp, newParts[0].Id); }
-                return new JObject { ["kind"] = kind, ["partIds"] = new JArray(newParts.Select(p => p.Id)), ["templateId"] = (string)op["templateId"] };
+                return new JObject { ["kind"] = kind, ["partIds"] = new JArray(newParts.Select(p => p.Id)), ["templateId"] = (string)op["templateId"], ["rootOnly"]=op.Value<bool?>("rootOnly")??false };
             }
             int id = Resolve(op["partId"], refs);
             if (kind == "part.delete")
@@ -621,9 +807,13 @@ namespace SP2BuildAssistant
         private void EditOutput(XElement xml, PartData part, string kind, JObject op)
         {
             string state = Required(op, "modifier"); string outputId = Required(op, "outputId");
-            var modifier = part.Modifiers.FirstOrDefault(m => m.StateElementName == state);
+            var modifiers=part.Modifiers.Where(m=>m.StateElementName==state).ToArray();
+            int index=op.Value<int?>("modifierIndex")??0;
+            if(op["modifierIndex"]==null&&modifiers.Length>1)throw new ApiError("modifier_ambiguous","Use the discovered modifierIndex for repeated native states.");
+            if(index<0||index>=modifiers.Length)throw new ApiError("modifier_not_found",state);
+            var modifier = modifiers[index];
             if (modifier?.VariableOutputDefinitions == null || !modifier.VariableOutputDefinitions.Any(v => v.Id == outputId)) throw new ApiError("output_not_found", "Query outputs.list for the native modifier and output IDs.");
-            XElement node = xml.Element("Assembly").Element("Parts").Elements("Part").Single(e => (int)e.Attribute("id") == part.Id).Element(state);
+            XElement node = xml.Element("Assembly").Element("Parts").Elements("Part").Single(e => (int)e.Attribute("id") == part.Id).Elements(state).ElementAtOrDefault(index);
             if (node == null) throw new ApiError("modifier_not_found", state);
             XElement variables = node.Element("Variables"); if (variables == null) { variables = new XElement("Variables"); node.Add(variables); }
             var target = variables.Elements("VariableOutput").FirstOrDefault(e => (string)e.Attribute("id") == outputId);
@@ -637,10 +827,10 @@ namespace SP2BuildAssistant
         }
         private void VariableName(string name)
         {
-            if (name == null || !Regex.IsMatch(name, "^[A-Za-z_][A-Za-z_0-9]*$")) throw new ApiError("invalid_variable_name", "Use ASCII letters, digits and underscore; do not start with a digit.");
+            if (name == null || !Regex.IsMatch(name, "[A-z_][A-z_0-9]*")) throw new ApiError("invalid_variable_name", "The native VariableSystem name pattern rejected this name.");
             var context = Current().Aircraft.ExpressionContext;
             var userNames = Current().Aircraft.VariableSystem.Variables.Select(v => v.Name);
-            if ((context.Properties.ContainsKey(name) && !userNames.Contains(name)) || context.Constants.ContainsKey(name) || context.Functions.ContainsKey(name) || context.SpecialFunctions.ContainsKey(name))
+            if (context.Properties.ContainsKey(name) && !userNames.Contains(name))
                 throw new ApiError("built_in_name_conflict", "Name conflicts with a built-in expression symbol.");
         }
         private static XElement SelectPath(XElement root, string path)
@@ -904,6 +1094,16 @@ namespace SP2BuildAssistant
                 ["position"] = JArray.FromObject(Vec(t.position)), ["rotationEulerDegrees"] = JArray.FromObject(Vec(t.eulerAngles)),
                 ["rotationQuaternion"] = new JArray(t.rotation.x, t.rotation.y, t.rotation.z, t.rotation.w), ["scale"] = JArray.FromObject(Vec(t.localScale)),
                 ["symmetryId"] = p.SymmetryId, ["materialIds"] = JArray.FromObject(p.MaterialIds), ["connectedPartIds"] = new JArray(p.PartConnections.Select(c => c.PartA == p ? c.PartB.Id : c.PartA.Id).Distinct()) };
+            result["partFingerprint"]=SnapshotState.Fingerprint(p.GenerateXml());result["contentFingerprint"]=ModelContentFingerprint(p);
+            if(p.GetModifier<Assets.Scripts.Craft.Parts.Modifiers.Powertrain.JDriveShaftData>()!=null){
+                var bindingState=new XElement(p.GenerateXml());foreach(string key in new[]{"id","position","rotation"})bindingState.Attribute(key)?.Remove();
+                if((string)bindingState.Attribute("scale")=="1,1,1")bindingState.Attribute("scale")?.Remove();
+                foreach(string key in new[]{"drag","dragArea"})bindingState.Attribute(key)?.Remove();
+                result["bindingRoundtripState"]=Node(bindingState);
+                result["bindingRoundtripPolicy"]="Explicit cross-session rebind only; all non-endpoint fields exact, JDriveShaft start/end <=2 micrometres, pose and uniqueness guards retained. Never used by revision or write-scope protection.";
+            }
+            result["contentFingerprintAlgorithm"]=ModelBindingContent.Algorithm;
+            KeyValuePair<PartData,string> lifetime;result["lifetimeId"]=modelLifetimes.TryGetValue(p.Id,out lifetime)?lifetime.Value:null;
             if (detailed) { result["state"] = Node(p.GenerateXml()); result["outputs"] = Outputs(p); result["attachPoints"] = Points(p); result["inputControllers"] = InputControllers(p, "live_part_modifier"); }
             return result;
         }
@@ -923,7 +1123,7 @@ namespace SP2BuildAssistant
         private static JArray Outputs(PartData p)
         {
             return new JArray(p.Modifiers.Where(m => m.VariableOutputDefinitions != null).Select(m => new JObject {
-                ["modifier"] = m.StateElementName, ["definitions"] = JArray.FromObject(m.VariableOutputDefinitions.Select(v => new { id = v.Id, name = v.DescriptiveName, defaultVariable = v.DefaultOutputVariable, defaultPriority = v.DefaultOutputPriority })),
+                ["modifier"] = m.StateElementName, ["modifierIndex"]=p.Modifiers.Where(n=>n.StateElementName==m.StateElementName).TakeWhile(n=>n!=m).Count(), ["definitions"] = JArray.FromObject(m.VariableOutputDefinitions.Select(v => new { id = v.Id, name = v.DescriptiveName, defaultVariable = v.DefaultOutputVariable, defaultPriority = v.DefaultOutputPriority })),
                 ["bindings"] = JArray.FromObject(m.VariableOutputs.Select(v => new { outputId = v.Definition.Id, variable = v.Variable, priority = v.Priority, activator = v.Activator })) }));
         }
         private static JArray OutputSources(IEnumerable<PartData> parts)

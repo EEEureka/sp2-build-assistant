@@ -1,0 +1,23 @@
+{
+  "datasetId": "4b32e6b7e51b5ac9f7466f96cf8c06231fd5a0f331aff39fa26185d6bf95ef12",
+  "files": [
+    {
+      "bytes": 19643053,
+      "name": "parts.json",
+      "sha256": "6f30a6680d5d459d07bfa091077bae03c3eea657d98a1a36275e230342d77722"
+    },
+    {
+      "bytes": 3858626,
+      "name": "funky.json",
+      "sha256": "d82ac65543ec8cf9e1ab21c0010eedc3fc005801ae20a8784ca3bf1dddd26986"
+    }
+  ],
+  "gameAssemblySha256": "e2ae689c7074246ec15858556070bfaa912b1dec51c2c0580b511cc61964bfff",
+  "gameVersion": "0.7.9.104",
+  "productVersion": "0.7.7a1",
+  "schemaVersion": "sp2model.knowledge.bundle/1",
+  "scope": "Curated versioned knowledge. Not writable-field authority or runtime certification.",
+  "sourceInventorySha256": "4a43b5484b8462045924303a63d045a6e46c63a879cee3e7a919d76301c0a62e",
+  "steamBuildId": "25840865",
+  "xmlVersion": 26
+}

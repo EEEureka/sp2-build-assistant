@@ -1,0 +1,11 @@
+{
+  "schemaVersion": 1,
+  "bundleVersion": "1.0.0-cp312-win_amd64",
+  "python": {"implementation": "CPython", "major": 3, "minor": 12, "bits": 64, "platform": "win32"},
+  "packages": [
+    {"name":"numpy","version":"2.2.6","filename":"numpy-2.2.6-cp312-cp312-win_amd64.whl","sha256":"c1f9540be57940698ed329904db803cf7a402f3fc200bfe599334c9bd84a40b2","size":12614190,"url":"https://files.pythonhosted.org/packages/36/fa/8c9210162ca1b88529ab76b41ba02d433fd54fecaf6feb70ef9f124683f1/numpy-2.2.6-cp312-cp312-win_amd64.whl"},
+    {"name":"pillow","version":"11.3.0","filename":"pillow-11.3.0-cp312-cp312-win_amd64.whl","sha256":"a6444696fce635783440b7f7a9fc24b3ad10a9ea3f0ab66c5905be1c19ccf17d","size":6986324,"url":"https://files.pythonhosted.org/packages/8c/ce/e7dfc873bdd9828f3b6e5c2bbb74e47a98ec23cc5c74fc4e54462f0d9204/pillow-11.3.0-cp312-cp312-win_amd64.whl"},
+    {"name":"opencv-python-headless","version":"4.11.0.86","filename":"opencv_python_headless-4.11.0.86-cp37-abi3-win_amd64.whl","sha256":"6c304df9caa7a6a5710b91709dd4786bf20a74d57672b3c31f7033cc638174ca","size":39402386,"url":"https://files.pythonhosted.org/packages/86/8a/69176a64335aed183529207ba8bc3d329c2999d852b4f3818027203f50e6/opencv_python_headless-4.11.0.86-cp37-abi3-win_amd64.whl"},
+    {"name":"scipy","version":"1.15.3","filename":"scipy-1.15.3-cp312-cp312-win_amd64.whl","sha256":"52092bc0472cfd17df49ff17e70624345efece4e1a12b23783a1ac59a1b728ed","size":40966184,"url":"https://files.pythonhosted.org/packages/e6/eb/3bf6ea8ab7f1503dca3a10df2e4b9c3f6b3316df07f6c0ded94b281c7101/scipy-1.15.3-cp312-cp312-win_amd64.whl"}
+  ]
+}

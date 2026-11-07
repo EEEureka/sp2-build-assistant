@@ -7,11 +7,11 @@ using System.Xml.Linq;
 
 namespace SP2BuildAssistant
 {
-    // Normalize only native GENERATED target lists, whose enumeration order varies
-    // between GenerateXml calls. Custom target order and all other child order remain significant.
+    // Normalize native generated target sets and aerodynamic caches for content identity.
+    // Raw XML/save/restore retains the caches; all editable drag settings remain significant.
     public static class SnapshotState
     {
-        public const string Algorithm = "xml-sha256-generated-target-sets-v2";
+        public const string Algorithm = "xml-sha256-native-derived-caches-v3";
         public const double RestoreEulerToleranceDegrees = 0.0001;
         public static bool EquivalentAfterNativeRestore(XElement expected, XElement actual)
         {
@@ -45,6 +45,16 @@ namespace SP2BuildAssistant
         public static string Fingerprint(XElement xml)
         {
             XElement copy = new XElement(xml);
+            // PartDrag.WriteToXml emits only these computed arrays. Restrict omission to
+            // actual part roots and Aircraft's direct CraftDrag, never modifier attributes.
+            // Designer rendering/save can recalculate them without any player content edit.
+            if (copy.Name == "Part") RemoveDragCache(copy);
+            if (copy.Name == "Aircraft")
+            {
+                var parts = copy.Element("Assembly")?.Element("Parts");
+                if (parts != null) foreach (var part in parts.Elements("Part")) RemoveDragCache(part);
+                foreach (var drag in copy.Elements("CraftDrag")) RemoveDragCache(drag);
+            }
             foreach (var element in copy.DescendantsAndSelf())
             {
                 var ids = element.Name.LocalName == "PartTargeting.State" ? element.Attribute("partIds") : null;
@@ -60,6 +70,11 @@ namespace SP2BuildAssistant
             }
             using (var sha = SHA256.Create())
                 return BitConverter.ToString(sha.ComputeHash(Encoding.UTF8.GetBytes(copy.ToString(SaveOptions.DisableFormatting)))).Replace("-", "").ToLowerInvariant();
+        }
+        private static void RemoveDragCache(XElement element)
+        {
+            element.Attribute("drag")?.Remove();
+            element.Attribute("dragArea")?.Remove();
         }
     }
 }
