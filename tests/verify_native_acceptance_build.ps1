@@ -1,8 +1,9 @@
 param([Parameter(Mandatory=$true)][string]$AcceptanceDll,
       [Parameter(Mandatory=$true)][string]$ShippingDll,
       [Parameter(Mandatory=$true)][string]$Report,
-      [string]$GameDir='D:\apps\steam\steamapps\common\SimplePlanes 2')
+      [string]$GameDir=$env:SP2_GAME_DIR)
 $ErrorActionPreference='Stop'
+if(-not $GameDir){throw 'Pass -GameDir with the directory containing SimplePlanes 2.exe.'}
 [void][Reflection.Assembly]::LoadFrom((Join-Path $GameDir 'BepInEx/core/Mono.Cecil.dll'))
 $taskNativeChecks = @()
 foreach ($taskNativeBuild in @(@{Path=$AcceptanceDll;Hooks=$true},@{Path=$ShippingDll;Hooks=$false})) {

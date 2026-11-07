@@ -1,7 +1,8 @@
 param([string]$Name='dev17-headless-a',
-      [string]$GameDir='D:\apps\steam\steamapps\common\SimplePlanes 2',
+      [string]$GameDir=$env:SP2_GAME_DIR,
       [string]$BridgeDll)
 $ErrorActionPreference='Stop'
+if(-not $GameDir){throw 'Pass -GameDir with the directory containing SimplePlanes 2.exe.'}
 if($Name -notmatch '^[a-zA-Z0-9-]+$'){throw 'Use a simple run name.'}
 $taskHostProject=Split-Path (Split-Path $PSScriptRoot -Parent) -Parent
 if(-not $BridgeDll){$BridgeDll=Join-Path $taskHostProject 'bin/SP2BuildAssistant.dll'}

@@ -1,6 +1,8 @@
-param([string]$GameDir='D:\apps\steam\steamapps\common\SimplePlanes 2')
+param([string]$GameDir=$env:SP2_GAME_DIR, [string]$Csc, [string]$VcTools=$env:VCToolsInstallDir)
 $ErrorActionPreference='Stop'
-$taskHostVc='D:\apps\visualStudio\VC\Tools\MSVC\14.44.35207'
+if(-not $GameDir -or -not $VcTools){throw 'Pass -GameDir and -VcTools or use the Visual Studio developer shell.'}
+if(-not $Csc){$Csc=(Get-Command csc.exe -ErrorAction Stop).Source}
+$taskHostVc=$VcTools.TrimEnd('\')
 $taskHostSdk='C:\Program Files (x86)\Windows Kits\10'
 $taskHostSdkVersion='10.0.26100.0'
 $taskHostNativeArgs=@('/nologo','/LD','/MT','/O2','/W4',('/I'+$taskHostVc+'\include'))
@@ -24,5 +26,5 @@ $taskHostArgs+=Join-Path $PSScriptRoot 'AcceptanceHost.cs'
 $taskHostArgs+=Join-Path $PSScriptRoot 'Win32HeapProbe.cs'
 $taskHostArgs+=Join-Path $PSScriptRoot 'MeshLifetimeReference.cs'
 $taskHostArgs+=Join-Path $PSScriptRoot 'ExpressionTemplateReference.cs'
-& 'D:\apps\visualStudio\MSBuild\Current\bin\Roslyn\csc.exe' @taskHostArgs
+& $Csc @taskHostArgs
 if($LASTEXITCODE -ne 0){throw 'Acceptance host compilation failed.'}

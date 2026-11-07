@@ -26,3 +26,16 @@
 host.json
 *.pem
 *.key
+
+# Private development records. Store new local notes under .local/.
+/AGENTS.md
+/Verification.md
+/docs/Acceptance-*
+/docs/Agent-Feedback-*
+/docs/Backlog-*
+/docs/Deployment-*
+/docs/Execution-*
+/docs/Implementation-*
+/docs/NEXT-SESSION-*
+/docs/SESSION-HANDOFF*
+/docs/Verification-*

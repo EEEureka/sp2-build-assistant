@@ -1,13 +1,20 @@
-param([string]$GameDir='D:\apps\steam\steamapps\common\SimplePlanes 2')
+param([string]$GameDir=$env:SP2_GAME_DIR, [string]$Csc, [string]$Python, [string]$Newtonsoft)
 $ErrorActionPreference='Stop'
+if(-not $GameDir){throw 'Pass -GameDir with the directory containing SimplePlanes 2.exe.'}
+if(-not $Csc){$Csc=(Get-Command csc.exe -ErrorAction Stop).Source}
+if(-not $Python){$Python=(Get-Command python.exe -ErrorAction Stop).Source}
+if(-not $Newtonsoft){
+    $Newtonsoft=Join-Path (Split-Path -Parent (Split-Path -Parent $Csc)) 'Newtonsoft.Json.dll'
+}
+if(-not (Test-Path -LiteralPath $Newtonsoft -PathType Leaf)){throw 'Pass -Newtonsoft with a .NET Framework Newtonsoft.Json.dll.'}
 $sp2TestOutput=Join-Path $env:TEMP ('sp2build-tests-'+[guid]::NewGuid().ToString('N'))
 New-Item -ItemType Directory -Path $sp2TestOutput | Out-Null
 $sp2Managed=Join-Path $GameDir 'SimplePlanes 2_Data\Managed'
-$sp2Compiler='D:\apps\visualStudio\MSBuild\Current\bin\Roslyn\csc.exe'
+$sp2Compiler=$Csc
 $sp2Root=Split-Path -Parent $PSScriptRoot
 $sp2Framework='C:\Windows\Microsoft.NET\Framework64\v4.0.30319'
 $sp2Refs=@('mscorlib.dll','System.dll','System.Core.dll','System.Xml.dll','System.Xml.Linq.dll') | ForEach-Object { '/reference:'+(Join-Path $sp2Framework $_) }
-$sp2Newtonsoft='D:\apps\visualStudio\MSBuild\Current\Bin\Newtonsoft.Json.dll'
+$sp2Newtonsoft=$Newtonsoft
 $sp2Refs+=('/reference:'+$sp2Newtonsoft)
 Copy-Item -LiteralPath $sp2Newtonsoft -Destination $sp2TestOutput
 & $sp2Compiler /nologo /langversion:7.3 /nostdlib+ @sp2Refs ('/out:'+(Join-Path $sp2TestOutput 'ExpressionTemplatesTests.exe')) (Join-Path $sp2Root 'bridge\ExpressionTemplates.cs') (Join-Path $PSScriptRoot 'ExpressionTemplatesTests.cs')
@@ -77,6 +84,6 @@ try {
     if(Test-Path -LiteralPath $sp2LocalTestDependencies) {
         $env:PYTHONPATH=$sp2LocalTestDependencies+[IO.Path]::PathSeparator+$sp2PriorPythonPath
     }
-    & 'D:\apps\python\python.exe' -m unittest discover -s $PSScriptRoot -p 'test_*.py'
+    & $Python -m unittest discover -s $PSScriptRoot -p 'test_*.py'
     if($LASTEXITCODE -ne 0){throw 'CLI tests failed. Optional schema dependencies belong in tests/.deps, not the CLI runtime.'}
 } finally { $env:PYTHONPATH=$sp2PriorPythonPath }

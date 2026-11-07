@@ -1,5 +1,5 @@
 param(
-    [string]$GameDir = 'D:\apps\steam\steamapps\common\SimplePlanes 2',
+    [string]$GameDir = $env:SP2_GAME_DIR,
     # A packaged agent host can redirect LocalAppData writes into its private
     # LocalCache. USERPROFILE keeps the installed CLI visible to other agents.
     [string]$InstallDir = "$env:USERPROFILE\.sp2build\app",
@@ -7,6 +7,7 @@ param(
     [switch]$InstallSkill
 )
 $ErrorActionPreference = 'Stop'
+if (-not $GameDir) { throw 'Pass -GameDir with the directory containing SimplePlanes 2.exe.' }
 $taskSourceRoot = $PSScriptRoot
 if (-not $Python) {
     $taskPyLauncher = Get-Command py.exe -ErrorAction SilentlyContinue

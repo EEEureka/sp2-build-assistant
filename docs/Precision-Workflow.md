@@ -1,20 +1,20 @@
-# 0.5.0 局部精修调用指南
+# Precision editing with sp2build
 
-本指南用于机头、玻璃、吊舱、挂架、起落架等局部精修。先查[当前验收状态](Acceptance-Status-0.5.0.md)；“参数写入成功”不能单独证明外观符合参考飞机。
+English · [简体中文](zh-CN/Precision-Workflow.md)
 
-## 一轮有效微调
+Use this 0.5.0 workflow for details such as a nose, window, pod, pylon or landing gear assembly. Review the native state, a comparable measurement and a matching view together.
 
-1. 确定目标件、参照件与不能改变的区域。把目标写成可比较的尺寸、截面或间隙；参考图里看不出的尺寸应标为未知。
-2. 查有效属性和依赖，建立检查点，记录初始测量与固定视图。
-3. 只改一组相关参数，等待命令完成，再读取实际结果。
-4. 打开原生图片，比较同一取景下的外观；测量真实网格，检查完整状态差异。
-5. 保留确有改善的结果；较差的候选回滚。达到约定容差、连续无改善或原生零件无法表达目标时，给出结果与限制。
+## Run one refinement pass
 
-机头通常先调截面，再处理接缝，最后调整窗体。吊舱先定引擎与罩的组合及尺度，再定位挂架。起落架先确认腿、轮、舱门和活塞的依赖及可达姿态，再处理收放间隙。
+1. Identify the parts to edit, the reference parts and the surrounding geometry to preserve. State a measurable target such as a width, section or clearance. Record dimensions that the reference does not show as unknown.
+2. Read the effective properties and dependencies. Create a checkpoint and record the initial measurements and views.
+3. Change one related group of parameters, wait for completion, and read back the affected parts.
+4. Open the native images and compare matching views. Measure the actual mesh and inspect the full craft-state diff.
+5. Retain a change that improves the result or restore the checkpoint. Report the remaining difference when the target has been met, repeated edits stop helping, or the native part cannot express the required shape.
 
-## 查询与范围
+For a nose, start with sections and seams, then refine windows. For a pod, choose the engine and fairing before locating the pylon. For landing gear, map the leg, wheel, door and piston dependencies before checking clearances.
 
-以下命令使用已安装的全局入口。ID均需从当前飞机查询；`76`只用于展示调用格式。
+## Discover properties and scope
 
 ```powershell
 sp2build version --json
@@ -26,32 +26,30 @@ sp2build properties get --id 76 --limit 1000 --json
 sp2build commands schema --operation properties.set
 ```
 
-`properties get`的字段在`data.parts[].fields[]`：以大小写敏感的`propertyId`标识，不用UI标签替代。检查`valueAvailable/value`、`editability`、`writeOperation`、`condition/currentCondition`、单位、边界与资源选项。未知值不能当作0；XML省略的值也不能当作没有该属性。
+Use actual part IDs from the open craft. `properties get` returns fields in `data.parts[].fields[]`. Use the case-sensitive `propertyId` and check `valueAvailable`, `value`, `editability`, `writeOperation`, `condition` and `currentCondition`, along with units, limits and resource options. An omitted XML field can still have an effective value.
 
-要查询尚未装到飞机上的零件，先检索原生目录，再用`properties describe --template-id TEMPLATE_ID`。复合模板会返回多个子件，每个子件的`total/offset`独立分页。字段目录不代表全部字段都能安全写入。
+For a part that is absent from the craft, search the catalog and run `properties describe --template-id TEMPLATE_ID`. Each part in a compound template has its own pagination.
 
-| 目标 | 优先接口 | 注意事项 |
+| Goal | Interface | What to verify |
 | --- | --- | --- |
-| 机身截面、裁切、倒角、翼型和控制面 | `shape get/schema`、`shape.update`、`wing.control.add` | 曲面控制截面的宽高不等于插值后表面实际宽高，应用截面测量复核 |
-| 窗体、文字、贴花、整流罩和机构 | `properties get`、`properties.set` | 按有效条件和资源枚举写入；不猜XML或Animator关键帧结构 |
-| 材料及指定槽位 | `appearance get`、`appearance.set` | `clone`局部克隆；`shared`会改到当前飞机中所有共用者 |
-| 一组部件的定位 | `groups resolve`、`transform.apply` | 腿及其原生随动轮、机翼及其控制面等依赖应一并选中 |
-| 挂点对齐 | `transform.align` | 只负责空间对齐，不建立连接；普通`connection.connect`不自动吸附 |
-| 贴花投射体位姿 | `decal pose get`、`decal.pose.set` | 原点在前投射平面，局部+Z覆盖0到depth，表面需处于有效体积内 |
+| Sections, cuts, bevels, airfoils and control surfaces | `shape get/schema`, `shape.update`, `wing.control.add` | Measure actual sections after interpolation. |
+| Windows, text, decals, fairings and mechanisms | `properties get`, `properties.set` | Use effective conditions and enumerated resources. |
+| Material slots | `appearance get`, `appearance.set` | `clone` creates a local copy. `shared` affects all users of that material in the craft. |
+| Rigid group positioning | `groups resolve`, `transform.apply` | Include dependent parts, such as the wheel on a gear leg. |
+| Attachment alignment | `transform.align`, `connection.connect` | Alignment and creating a connection are separate operations. |
+| Decal projector pose | `decal pose get`, `decal.pose.set` | The origin is the front projection plane. Local +Z covers zero to the configured depth. |
 
-## 检查点、小改与恢复
-
-用当前`craftSessionId/revision`创建检查点，保留其ID。所有写入均使用新的`requestId`；每次修改或恢复后重新读取身份，不重复使用旧revision。
+## Checkpoint, apply and compare
 
 ```powershell
 sp2build craft checkpoint create --input checkpoint.json --json
-sp2build batch preview --input patch.json --json
+sp2build batch preview --input patch.json --request-id PREVIEW_REQUEST_ID --json
 sp2build batch apply --input patch.json --json
 sp2build craft diff --checkpoint-id CHECKPOINT_ID --json
 sp2build craft rollback --input rollback.json --json
 ```
 
-`patch.json`结构示例：
+For `patch.json`, use the following structure.
 
 ```json
 {
@@ -67,11 +65,11 @@ sp2build craft rollback --input rollback.json --json
 }
 ```
 
-检查点输入包含上述三项身份/请求字段，可加`name`。回滚输入包含当前身份、新请求ID及`checkpointId`。预检查不会实际生成模型，也不会锁住revision；实际写入后应读`effectiveChanges`和`validation`。错误时检查`rollbackResult.restored`及`stateUncertain`，不能因返回失败就假设没有改动。
+The checkpoint input contains the same identity and request fields plus an optional `name`. Rollback adds `checkpointId`. Use a fresh request ID for each distinct action and re-read the current revision after each edit or restore. Preview validates the request without building geometry or reserving a revision. After applying, read `effectiveChanges`, `validation` and, on failure, `rollbackResult.restored` and `stateUncertain`.
 
-起落架样式编辑保留已有动画，但新几何未必适合旧姿态。样式变更后重新查询条件字段；新挂点所需配置放在后续operation。同步遵守部件对称组和modifier开关，`symmetric:true`不会强行覆盖已禁用的同步开关。
+Changing a gear style retains existing animation data. Recheck the poses and conditional fields for the new geometry. Set any newly available attachment options in a later operation. Symmetry still follows the native group and modifier settings.
 
-## 固定图片与测量
+## Capture and measure
 
 ```powershell
 sp2build designer capture --input views.json --output-dir inspection --json
@@ -80,14 +78,12 @@ sp2build geometry seam --input seam.json --json
 sp2build geometry measure --input clearance.json --json
 ```
 
-先查各命令schema组成请求。原生截图返回`repeatableViews/repeatableResolution`，后续复拍沿用它们。每次自动适配取景可能改变缩放比例，不能直接比较像素长度。Agent必须真正打开返回的图片，才能判断玻璃、文字、材质、遮挡及模型是否刷新。
+Build each input from its command schema. Reuse `repeatableViews` and `repeatableResolution` from the native capture. Open the PNGs to inspect transparency, decals, text and occlusion. Automatic framing can change the scale between images.
 
-`geometry measure`返回两组表面的最近距离和见证点；0可能表示接触或相交，不提供穿透深度。接缝应使用`geometry seam`限定平面和局部区域，读采样的最大/RMS误差；最近一点距离小，不能证明整个接缝闭合。截面是三角网格与平面的交线段，不是理想CAD曲线。
+`geometry measure` returns the nearest surface distance and witness points. Zero can indicate contact or intersection. Use `geometry seam` with a local plane and region to read sampled maximum and RMS error across the join. A cross-section is the intersection of the triangle mesh and the section plane.
 
-始终读`complete/exclusions/staleAtDelivery`。不完整或已过时的采样不能作为合格证据；离散收放端点无碰撞也不能证明整个动画轨迹安全。原生参数无法表达的形状，应拆分建模或明确告知限制。
+Check `complete`, `exclusions` and `staleAtDelivery` before treating a result as evidence. Test the full path of a mechanism when checking motion and clearance.
 
-## 不占用桌面的操作
+## Navigate the designer
 
-经用户授权后，可通过`designer crafts/control`进入设计器、加载原生保存的飞机、选中零件、返回菜单或退出，见[完整导航参数](../skills/sp2-build-assistant/references/designer-navigation.md)。加载和离开会使当前未保存编辑及检查点失效，需当前身份与明确的`discardCurrent:true`。只有加载到设计器后才能编辑。
-
-这些接口不模拟鼠标点击、不激活窗口。启动尚未运行的游戏仍需本地进程启动器；DLL不能在不存在的进程中自行执行。正式插件不屏蔽玩家输入，玩家同时编辑时应遵守revision冲突结果重新规划。
+With the user's authorization, `designer crafts` and `designer control` can enter the designer, load a save, select parts, return to the menu or exit through native APIs. Loading or leaving can discard unsaved edits and invalidate checkpoints, so check the current identity and the `discardCurrent` requirement first. [Navigation command reference](../skills/sp2-build-assistant/references/designer-navigation.md)

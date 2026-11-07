@@ -1,9 +1,11 @@
 param(
-    [string]$GameDir = 'D:\apps\steam\steamapps\common\SimplePlanes 2',
-    [string]$Csc = 'D:\apps\visualStudio\MSBuild\Current\bin\Roslyn\csc.exe',
+    [string]$GameDir = $env:SP2_GAME_DIR,
+    [string]$Csc,
     [switch]$AcceptanceHooks
 )
 $ErrorActionPreference = 'Stop'
+if (-not $GameDir) { throw 'Pass -GameDir with the directory containing SimplePlanes 2.exe.' }
+if (-not $Csc) { $Csc = (Get-Command csc.exe -ErrorAction Stop).Source }
 $taskProjectDir = $PSScriptRoot
 $taskManaged = Join-Path $GameDir 'SimplePlanes 2_Data\Managed'
 $taskOutput = Join-Path $taskProjectDir 'bin\SP2BuildAssistant.dll'
