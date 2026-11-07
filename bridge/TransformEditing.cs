@@ -131,7 +131,9 @@ namespace SP2BuildAssistant
         private JObject TransformAlign(JObject op,BatchReferences refs)
         {
             var ids=TransformIds(op,refs);int source=refs.Resolve(op["sourcePartId"]),target=refs.Resolve(op["targetPartId"]);if(!ids.Contains(source)||ids.Contains(target))throw new ApiError("invalid_input","Source must be a moving group member; target must be outside the group.");
-            var a=Part(source);var b=Part(target);var ap=a.AttachPoints.SingleOrDefault(x=>x.Id==Int(op,"sourcePointId"));var bp=b.AttachPoints.SingleOrDefault(x=>x.Id==Int(op,"targetPointId"));
+            var a=Part(source);var b=Part(target);
+            if(op["sourcePointId"]==null&&op["targetPointId"]==null){var pair=ClosestModelAttachment(a,b);op=(JObject)op.DeepClone();op["sourcePointId"]=pair.Item1;op["targetPointId"]=pair.Item2;}
+            var ap=a.AttachPoints.SingleOrDefault(x=>x.Id==Int(op,"sourcePointId"));var bp=b.AttachPoints.SingleOrDefault(x=>x.Id==Int(op,"targetPointId"));
             if(ap==null||bp==null)throw new ApiError("attach_point_not_found","Query connections.points.");
             var pa=(JObject)Points(a).Single(x=>(int)x["id"]==ap.Id);var pb=(JObject)Points(b).Single(x=>(int)x["id"]==bp.Id);
             var from=ReadPosition(pa["worldPosition"]);var to=ReadPosition(pb["worldPosition"]);

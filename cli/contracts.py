@@ -163,6 +163,10 @@ MUTATION = identified({"operationId": S, "actualChanges": arr(ref("Change")),
 MUTATION["properties"]["identity"] = described(ref("Identity"), "Identity sampled at completion, not a lock on future state. Native save/AutoRecenter or player edits may subsequently advance revision. Read fresh state on revision_conflict and compare geometry at one revision; history.nativeSteps lists observed native steps without identifying who triggered them.")
 MUTATION["properties"]["validation"] = described(ref("Validation"), "Checks at completion. Native geometry was settled then; this does not prevent a later save/recenter or player edit. Native connection callbacks may change shape or pose within the successful batch; read back actual values rather than assuming the submitted values are the final shape.")
 OUTPUTS = {
+    "scope.capture": identified({"scopeId":S,"ownerId":S,"capturedRevision":I,"writePartIds":IDS,"guardPartIds":IDS,"boundaryPartIds":IDS,"relations":arr({"type":"object"}),"partFingerprints":{"type":"object"},"sharedStateFingerprint":S}),
+    "scope.get": identified({"scopeId":S,"valid":B,"writePartIds":IDS,"guardPartIds":IDS,"conflict":{"type":"object"}},["scopeId","valid","writePartIds","guardPartIds"]),
+    "scope.release": identified({"scopeId":S,"released":B}),
+    "scoped.batch.apply": identified({"operationId":S,"scopeId":S,"ownerId":S,"completed":B,"completedOperationCount":I,"operationCount":I,"chunks":arr({"type":"object"}),"rollbackPolicy":S,"frameDiagnostics":{"type":"object"},"verificationLevel":S}),
     "designer.capture": identified({"captureId": S, "backend": {"const": "native_designer_camera"}, "nativeMaterials": B, "includesUi": B, "includesGizmos": {"type":["boolean","null"]}, "gizmoPolicy": S,
         "cameraRestored": B, "sceneIntegrity": ref("DesignerSceneIntegrity"),
         "views": arr(obj({"name": S, "view": S, "file": S, "width": I, "height": I,
@@ -332,6 +336,7 @@ funky = obj({"gameVersion": S, "source": S, "trigUnit": S, "evaluated": B,
                                  "parameters": arr(obj({"name": S, "type": S})), "description": S}, ["name", "kind"]))})
 status["properties"]["inputControllerEditing"] = ref("InputControllerEditing")
 status["properties"]["sceneIntegrity"] = nullable(ref("DesignerSceneIntegrity"))
+status["properties"]["designerMode"] = {"enum":["standalone","flight","inactive"]}
 status["properties"]["acceptanceNative"] = obj({"available": B, "reason": S, "command": S,
     "fixturePrefix": S, "actions": STRINGS, "evidence": S, "desktopInput": B}, ["available"])
 status["properties"]["runtimeRetention"] = obj({
@@ -352,9 +357,13 @@ status["properties"]["runtimeRetention"] = obj({
 OUTPUTS.update({
     "capabilities": status, "designer.status": status,
     "parts.geometry": identified({"geometry": obj({"partId": I, "coordinateSystem": S,
+                           "renderBounds": described({"oneOf": [ref("Bounds"), {"type": "null"}]}, "Whole active owned entity surface world AABB, union of native renderer bounds; already includes hierarchy transforms, may conservatively enclose actual vertices."),
+                           "renderBoundsMeaning": S, "renderBoundsMembers": arr(I), "rendererExclusions": arr(obj({})),
+                           "geometryStamp": S, "geometryStampKind": S, "colliderMeaning": S,
                            "renderers": arr(obj({"name": S, "bounds": ref("Bounds")})),
                            "colliders": arr(obj({"name": S, "type": S, "layer": I, "bounds": ref("Bounds")})),
-                           "editorColliders": arr(obj({"bounds": ref("Bounds"), "includeInBounds": B}))})}),
+                           "editorColliders": arr(obj({"bounds": ref("Bounds"), "includeInBounds": B}))},
+                           ["partId", "coordinateSystem", "renderers", "colliders", "editorColliders"])}),
     "symmetry.get": identified({"configuration": obj({"mode": S, "mirrorPlaneNormal": V,
                         "mirrorPlaneDistance": described(N, "Plane coefficient in dot(normal, worldPosition) + distance = 0; it is not the plane's X coordinate."),
                         "radialAxis": V, "radialOrigin": V, "disabledForNewParts": B,
@@ -454,6 +463,15 @@ DEFS["Validation"]["properties"]["retainedNativeCaches"] = _retained_cache
 DEFS["Rollback"]["properties"]["retainedNativeCaches"] = _retained_cache
 
 def output_schema(command):
+    if command=='craft.status':return envelope(obj({'name':nullable(S),'identity':nullable(ref('Identity')),'partCount':I,'connectionCount':I,'designerReady':B,'pluginVersion':S,'sdkVersion':S,'buildId':S,'detail':{'const':'summary'}}))
+    if command=='parts.query':return envelope(identified({'name':S,'items':arr(obj({'id':I},['id'])),'total':I,'returned':I,'offset':I,'limit':I,'hasMore':B,'truncationReason':nullable(S),'allowedFields':STRINGS}))
+    if command=='native.state':return envelope(identified({'partId':I,'state':ref('XmlNode'),'metadata':arr(DYNAMIC),'source':S,'unknownAttributePolicy':S,'attributeOperations':STRINGS,'emptyValuePolicy':S,'nodeOperations':DYNAMIC,'structuralOperations':DYNAMIC}))
+    if command=='mechanical.get':return envelope(identified({'partId':I,'family':{'const':'driveShaft'},'endpoints':arr(ref('AttachPoint')),'endpointDistanceMetres':N,'radiusMultiplier':N,'bootA':B,'bootB':B,'source':S,'limits':DYNAMIC}))
+    if command=='wing.stations':return envelope(identified({'partId':I,'spanMetres':N,'stations':arr(DYNAMIC),'source':S,'meaning':S,'flipped':B}))
+    if command=='airfoils.describe':return envelope(obj({'source':S},['source']))
+    if command=='model.dependencies':return envelope(identified({'selectedPartIds':IDS,'connections':arr(DYNAMIC),'nativeGroups':DYNAMIC,'symmetryCandidates':IDS,'requiredWritableCandidates':IDS,'completeness':S,'unknownDynamicCallbacks':B,'writableExpanded':{'const':False},'meaning':S}))
+    if command=='logic.dependencies':return envelope(identified({'variable':nullable(S),'declarations':arr(DYNAMIC),'references':arr(DYNAMIC),'parseFailures':arr(DYNAMIC),'duplicateProviders':arr(DYNAMIC),'possibleCycles':arr(STRINGS),'source':S,'unknownExpressionFields':B,'coverage':S,'migration':S}))
+    if command=='craft.checkpoint.prune':return envelope(identified({'deletedIds':STRINGS,'capacity':DYNAMIC}))
     if command == "designer.control":
         from designer_control import output_data_schema
         return envelope(output_data_schema())

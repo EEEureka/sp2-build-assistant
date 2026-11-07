@@ -35,19 +35,19 @@ namespace SP2BuildAssistant
                 totalParts=ids.Length,offset,capturedFrame=Time.frameCount,parts=new JArray(ids.Skip(offset).Take(limit).Select(id=>new JObject{["partId"]=id,["designerDisplayState"]=NativeDisplayState(Part(id)),["slots"]=new JArray(Part(id).MaterialIds.Select((m,s)=>new JObject{["slot"]=s,["materialId"]=m,["assignable"]=m>=0}))})),
                 scope="Current aircraft only. Clone edits create a local Custom theme; global themes are never changed. Colors serialize to native RGBA8."};
         }
-        private int[] PartIds(JToken token)
+        private int[] PartIds(JToken token,BatchReferences refs=null)
         {
             if(!(token is JArray a)||a.Count<1||a.Count>2048)throw new ApiError("invalid_input","partIds requires 1..2048 IDs.");
-            var ids=a.Select(t=>VisualScope.Integer(t,"partId",0)).ToArray();if(ids.Distinct().Count()!=ids.Length)throw new ApiError("invalid_input","Duplicate part IDs.");foreach(int id in ids)Part(id);return ids;
+            var ids=a.Select(t=>refs==null?VisualScope.Integer(t,"partId",0):refs.Resolve(t)).ToArray();if(ids.Distinct().Count()!=ids.Length)throw new ApiError("invalid_input","Duplicate part IDs.");foreach(int id in ids)Part(id);return ids;
         }
-        private JObject AppearanceSet(JObject op,bool preview=false)
+        private JObject AppearanceSet(JObject op,bool preview=false,BatchReferences refs=null)
         {
             string mode=Required(op,"mode");if(!new[]{"assign","clone","shared"}.Contains(mode))throw new ApiError("invalid_input","mode must be assign, clone or shared.");
             var craft=Current().Aircraft.Aircraft;int source=Int(op,"materialId");
             var theme=new ThemeData(new XElement(craft.CurrentTheme.GenerateXml()),AircraftData.CurrentXmlVersion);
             var material=theme.Materials.FirstOrDefault(m=>m.Id==source);
             if(material==null)throw new ApiError("material_not_editable","Choose an existing non-reserved palette material.");
-            int[] ids=mode=="shared"?craft.Assembly.Parts.Where(p=>p.MaterialIds.Contains(source)).Select(p=>p.Id).ToArray():PartIds(op["partIds"]);
+            int[] ids=mode=="shared"?craft.Assembly.Parts.Where(p=>p.MaterialIds.Contains(source)).Select(p=>p.Id).ToArray():PartIds(op["partIds"],refs);
             if(mode=="shared"&&(op["partIds"]!=null||op["slots"]!=null))throw new ApiError("invalid_input","Shared mode explicitly affects all users; omit partIds and slots.");
             var patch=op["patch"] as JObject;
             if(mode=="assign"&&op["patch"]!=null)throw new ApiError("invalid_input","assign cannot edit material values.");

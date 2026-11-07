@@ -4,13 +4,76 @@ using Newtonsoft.Json.Linq;
 
 namespace SP2BuildAssistant
 {
-    // State comparison is independent of Unity. Tolerances are absolute, never
-    // proportional to camera distance; object identities and modes remain exact.
+    // State comparison is independent of Unity. Pose tolerances are absolute;
+    // only the derived view-matrix dot products have a float rounding bound.
+    // Object identities, modes and projection checks remain independent.
     internal static class CameraState
     {
         internal const double PositionTolerance = .0001;
         internal const double AngleToleranceDegrees = .001;
         internal const double ScalarTolerance = .000001;
+
+        private static bool Numbers(JToken token,int count,out double[] values)
+        {
+            var array=token as JArray;values=null;
+            if(array==null||array.Count!=count||array.Any(x=>x.Type!=JTokenType.Float&&x.Type!=JTokenType.Integer))return false;
+            values=array.Select(x=>(double)x).ToArray();
+            return values.All(x=>!double.IsNaN(x)&&!double.IsInfinity(x)&&Math.Abs(x)<=float.MaxValue);
+        }
+        private static bool Matrix(JToken token,out double[][] values)
+        {
+            values=null;var array=token as JArray;if(array==null||array.Count!=4)return false;
+            var rows=new double[4][];
+            for(int i=0;i<4;i++)if(!Numbers(array[i],4,out rows[i]))return false;
+            values=rows;return true;
+        }
+        // Half an ULP bounds one correctly rounded float operation. Use the
+        // larger binade spacing at powers of two, including subnormal values.
+        private static double HalfFloatUlp(double value)
+        {
+            value=Math.Abs(value);
+            if(value>float.MaxValue)return double.PositiveInfinity;
+            if(value<Math.Pow(2,-126))return Math.Pow(2,-150);
+            double exponent=Math.Floor(Math.Log(value,2));
+            return Math.Pow(2,exponent-24);
+        }
+        private static double DotRoundoff(double[] row,double[] position)
+        {
+            var products=Enumerable.Range(0,3).Select(i=>row[i]*position[i]).ToArray();
+            // A three-term dot product: three multiplications, two additions.
+            // Bound either association using the largest pairwise partial sum.
+            double partial=Math.Max(Math.Abs(products[0]+products[1]),Math.Max(Math.Abs(products[0]+products[2]),Math.Abs(products[1]+products[2])));
+            return products.Sum(HalfFloatUlp)+HalfFloatUlp(partial)+HalfFloatUlp(products.Sum())+HalfFloatUlp(row[3]);
+        }
+        private static JObject ViewMatrixDifference(JObject before,JObject after,JToken a,JToken b)
+        {
+            double[][] aa,bb;double[] pa,pb;
+            if(!Matrix(a,out aa)||!Matrix(b,out bb)||!Numbers(before["positionWorld"],3,out pa)||!Numbers(after["positionWorld"],3,out pb))
+                return new JObject{["field"]="worldToCameraRows",["before"]=a?.DeepClone(),["after"]=b?.DeepClone(),["metric"]="valid_finite_view_matrix",["error"]=null,["tolerance"]=ScalarTolerance,["withinTolerance"]=false};
+            double directError=0,rawError=0,adjustedError=0;
+            for(int i=0;i<4;i++)for(int j=0;j<4;j++){
+                double delta=Math.Abs(bb[i][j]-aa[i][j]);rawError=Math.Max(rawError,delta);
+                if(i==3||j<3)directError=Math.Max(directError,delta);
+            }
+            var rows=new JArray();
+            for(int i=0;i<3;i++){
+                // t=-R*p. Compensate the OBSERVED pose change, not the allowed
+                // angular/position tolerance; a moved camera still fails its
+                // separate pose guard. This also preserves custom-matrix offsets.
+                double expected=0;
+                for(int j=0;j<3;j++)expected-=(bb[i][j]-aa[i][j])*pa[j]+bb[i][j]*(pb[j]-pa[j]);
+                double raw=bb[i][3]-aa[i][3],residual=raw-expected;
+                double rounding=DotRoundoff(aa[i],pa)+DotRoundoff(bb[i],pb);
+                if(double.IsInfinity(rounding))return new JObject{["field"]="worldToCameraRows",["metric"]="finite_float32_dot_product",["error"]=null,["tolerance"]=ScalarTolerance,["withinTolerance"]=false};
+                adjustedError=Math.Max(adjustedError,Math.Max(0,Math.Abs(residual)-rounding));
+                rows.Add(new JObject{["row"]=i,["rawTranslationDifference"]=raw,["observedPosePropagation"]=expected,["compensatedResidual"]=residual,
+                    ["float32RoundoffBound"]=rounding,["tolerance"]=ScalarTolerance+rounding,["withinTolerance"]=Math.Abs(residual)<=ScalarTolerance+rounding});
+            }
+            double error=Math.Max(directError,adjustedError);
+            return new JObject{["field"]="worldToCameraRows",["before"]=a.DeepClone(),["after"]=b.DeepClone(),
+                ["metric"]="pose_compensated_excess_over_float32_roundoff",["error"]=error,["tolerance"]=ScalarTolerance,["withinTolerance"]=error<=ScalarTolerance,
+                ["maxRawAbsoluteDifference"]=rawError,["linearAndHomogeneousMaxDifference"]=directError,["translationRows"]=rows};
+        }
 
         internal static double QuaternionAngle(JArray a, JArray b)
         {
@@ -25,6 +88,13 @@ namespace SP2BuildAssistant
             var diffs=new JArray();
             foreach(string key in before.Properties().Select(p=>p.Name).Union(after.Properties().Select(p=>p.Name))){
                 var a=before[key];var b=after[key];
+                if(key=="worldToCameraRows"){
+                    double[][] unchanged;
+                    if(JToken.DeepEquals(a,b)&&Matrix(a,out unchanged))continue;
+                    var matrixDiff=ViewMatrixDifference(before,after,a,b);
+                    if(!JToken.DeepEquals(a,b)||!(bool)matrixDiff["withinTolerance"])diffs.Add(matrixDiff);
+                    continue;
+                }
                 if(JToken.DeepEquals(a,b))continue;
                 double tolerance=ScalarTolerance,error=double.PositiveInfinity;
                 string metric="absolute";

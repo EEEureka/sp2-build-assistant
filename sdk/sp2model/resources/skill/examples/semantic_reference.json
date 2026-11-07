@@ -1,0 +1,271 @@
+{
+  "reference_id": "verbal-demo",
+  "spec": {
+    "source": {
+      "kind": "text",
+      "locator": "user-description-demo",
+      "text": "Demonstration only: a 2 m wide, 1 m high, 3 m long rectangular shell centered at x=0,y=0. A half-metre cube marker has center x=0,y=2,z=1.5. Keep the space above the shell clear."
+    },
+    "frame": {
+      "units": "m",
+      "scale": 1,
+      "origin": [
+        0,
+        0,
+        0
+      ],
+      "axes": {
+        "x": "right",
+        "y": "up",
+        "z": "forward"
+      },
+      "handedness": "right",
+      "scaleSource": "user",
+      "rotationQuaternion": [
+        0,
+        0,
+        0,
+        1
+      ]
+    },
+    "scope": [
+      "shell",
+      "marker"
+    ],
+    "features": [
+      {
+        "id": "shell-mid-contour",
+        "component": "shell",
+        "kind": "section_contour",
+        "evidenceKind": "user",
+        "tolerance_m": 0.01,
+        "geometry": {
+          "origin": [
+            0,
+            0,
+            1.5
+          ],
+          "normal": [
+            0,
+            0,
+            1
+          ],
+          "segments": [
+            [
+              [
+                -1,
+                -0.5,
+                1.5
+              ],
+              [
+                1,
+                -0.5,
+                1.5
+              ]
+            ],
+            [
+              [
+                1,
+                -0.5,
+                1.5
+              ],
+              [
+                1,
+                0.5,
+                1.5
+              ]
+            ],
+            [
+              [
+                1,
+                0.5,
+                1.5
+              ],
+              [
+                -1,
+                0.5,
+                1.5
+              ]
+            ],
+            [
+              [
+                -1,
+                0.5,
+                1.5
+              ],
+              [
+                -1,
+                -0.5,
+                1.5
+              ]
+            ]
+          ],
+          "boundaryRule": "planar_union"
+        }
+      },
+      {
+        "id": "shell-mid-center",
+        "component": "shell",
+        "kind": "section_center",
+        "evidenceKind": "user",
+        "tolerance_m": 0.01,
+        "geometry": {
+          "origin": [
+            0,
+            0,
+            1.5
+          ],
+          "normal": [
+            0,
+            0,
+            1
+          ],
+          "center": [
+            0,
+            0,
+            1.5
+          ],
+          "definition": "boundary_bbox"
+        }
+      },
+      {
+        "id": "shell-right-boundary",
+        "component": "shell",
+        "kind": "section_boundary",
+        "evidenceKind": "user",
+        "tolerance_m": 0.01,
+        "geometry": {
+          "origin": [
+            0,
+            0,
+            1.5
+          ],
+          "normal": [
+            0,
+            0,
+            1
+          ],
+          "axis": [
+            1,
+            0,
+            0
+          ],
+          "side": "max",
+          "valueMetres": 1
+        }
+      },
+      {
+        "id": "shell-clearance",
+        "component": "shell",
+        "kind": "negative_space",
+        "evidenceKind": "user",
+        "tolerance_m": 0.01,
+        "geometry": {
+          "probes": [
+            [
+              0,
+              0.75,
+              0.5
+            ],
+            [
+              0,
+              0.75,
+              1.5
+            ],
+            [
+              0,
+              0.75,
+              2.5
+            ]
+          ]
+        }
+      },
+      {
+        "id": "marker-mid-contour",
+        "component": "marker",
+        "kind": "section_contour",
+        "evidenceKind": "user",
+        "tolerance_m": 0.01,
+        "geometry": {
+          "origin": [
+            0,
+            2,
+            1.5
+          ],
+          "normal": [
+            0,
+            0,
+            1
+          ],
+          "segments": [
+            [
+              [
+                -0.25,
+                1.75,
+                1.5
+              ],
+              [
+                0.25,
+                1.75,
+                1.5
+              ]
+            ],
+            [
+              [
+                0.25,
+                1.75,
+                1.5
+              ],
+              [
+                0.25,
+                2.25,
+                1.5
+              ]
+            ],
+            [
+              [
+                0.25,
+                2.25,
+                1.5
+              ],
+              [
+                -0.25,
+                2.25,
+                1.5
+              ]
+            ],
+            [
+              [
+                -0.25,
+                2.25,
+                1.5
+              ],
+              [
+                -0.25,
+                1.75,
+                1.5
+              ]
+            ]
+          ],
+          "boundaryRule": "planar_union"
+        }
+      },
+      {
+        "id": "marker-placement",
+        "component": "marker",
+        "kind": "relative_pose",
+        "evidenceKind": "user",
+        "tolerance_m": 0.01,
+        "geometry": {
+          "otherComponent": "shell",
+          "anchor": "mesh_bbox_center",
+          "deltaMetres": [
+            0,
+            2,
+            0
+          ]
+        }
+      }
+    ]
+  }
+}

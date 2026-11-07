@@ -1,0 +1,13 @@
+{
+  "component": "tapered-shell",
+  "shape": {
+    "name": "tapered-shell",
+    "normal": [0, 0, 1],
+    "up": [0, 1, 0],
+    "stations": [
+      {"id": "rear", "center": [0, 0, 0], "width": 2, "height": 1},
+      {"id": "front", "center": [0.2, 0.1, 2], "width": 1, "height": 0.6}
+    ]
+  },
+  "hypothesis": "Syntax example: preserve measured section centre drift; bind corresponding reference targets first."
+}

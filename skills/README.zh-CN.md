@@ -2,6 +2,8 @@
 
 [English](README.md) · 简体中文
 
+最新 [v0.7.8 Release](https://github.com/EEEureka/sp2-build-assistant/releases/tag/v0.7.8) 的完整包已包含配套 SDK skill，新安装请使用该完整包。本页保留旧版 0.5.0 skill 包的安装说明。
+
 这个 skill 说明本机 AI Agent 如何通过 `sp2build` 操作 SimplePlanes 2 设计器。在交给 Agent 建模任务前，先安装同版本的完整工具并启动游戏。 [v0.5.0 发布页](https://github.com/EEEureka/sp2-build-assistant/releases/tag/v0.5.0)
 
 在解压目录打开 PowerShell 并运行安装器。

@@ -13,8 +13,14 @@ namespace SP2BuildAssistant
     {
         private async UniTask<JObject> GeometryQuery(string command,JObject a,Job job)
         {
-            VisualScope.Keys(a,"craftSessionId","expectedRevision","partIds","partIdsA","partIdsB","frame","plane","region","sampleSpacingMetres","limit","includeHidden","export","exportMeshes","source");
+            VisualScope.Keys(a,"craftSessionId","expectedRevision","partIds","partIdsA","partIdsB","frame","plane","region","sampleSpacingMetres","limit","includeHidden","export","exportMeshes","source","vertexAttributes");
             bool exportMeshes=VisualScope.Boolean(a["exportMeshes"],"exportMeshes");
+            string[] vertexAttributes=null;
+            if(a["vertexAttributes"]!=null){
+                if(!(a["vertexAttributes"] is JArray requested)||requested.Count<1||requested.Count>2||requested.Any(x=>x.Type!=JTokenType.String))throw new ApiError("invalid_input","vertexAttributes must be a nonempty array of normals and/or tangents.");
+                vertexAttributes=requested.Values<string>().ToArray();
+                if(vertexAttributes.Distinct().Count()!=vertexAttributes.Length||vertexAttributes.Any(x=>x!="normals"&&x!="tangents")||!exportMeshes)throw new ApiError("invalid_input","Unique normals/tangents require exportMeshes:true.");
+            }
             if(exportMeshes&&!VisualScope.Boolean(a["export"],"export"))throw new ApiError("invalid_input","exportMeshes requires export:true; meshes are local artifacts, not inline response fields.");
             var clock=System.Diagnostics.Stopwatch.StartNew();var timings=new JObject();
             Observe();VisualGuard(a);var d=Current();var aircraft=d.Aircraft;await ReadSettled(d,null);Observe();VisualGuard(a);timings["observeAndSettleMs"]=clock.Elapsed.TotalMilliseconds;double stage=clock.Elapsed.TotalMilliseconds;
@@ -24,7 +30,8 @@ namespace SP2BuildAssistant
             var groups=new JArray(new JObject{["index"]=0,["partIds"]=new JArray(first)});if(!section)groups.Add(new JObject{["index"]=1,["partIds"]=new JArray(second)});
             int limit=a["limit"]==null?64:VisualScope.Integer(a["limit"],"limit",1,1000);
             string source=a.Value<string>("source")??"renderMesh";if(source!="renderMesh"&&source!="collider")throw new ApiError("invalid_input","source is renderMesh or collider.");
-            var snap=source=="collider"?CopyColliderSnapshot(groups,frameToWorld.inverse,VisualScope.Boolean(a["includeHidden"],"includeHidden"),job):CopyMeshSnapshot(groups,frameToWorld.inverse,VisualScope.Boolean(a["includeHidden"],"includeHidden"),job);
+            if(source=="collider"&&vertexAttributes!=null)throw new ApiError("attribute_source_unsupported","Rendering attributes are unavailable on collider queries; use renderMesh.");
+            var snap=source=="collider"?CopyColliderSnapshot(groups,frameToWorld.inverse,VisualScope.Boolean(a["includeHidden"],"includeHidden"),job):CopyMeshSnapshot(groups,frameToWorld.inverse,VisualScope.Boolean(a["includeHidden"],"includeHidden"),job,vertexAttributes);
             var identity=JToken.FromObject(Identity());int capturedFrame=Time.frameCount;timings["copyMainThreadMs"]=clock.Elapsed.TotalMilliseconds-stage;stage=clock.Elapsed.TotalMilliseconds;
             var plane=a["plane"] as JObject;var region=a["region"] as JObject;
             VisualCore.V origin=new VisualCore.V(),normal=new VisualCore.V(0,1,0);VisualCore.V? min=null,max=null;
@@ -53,8 +60,9 @@ namespace SP2BuildAssistant
                 var artifact=new VisualCore.Result();artifact.Manifest=(JObject)result.DeepClone();
                 artifact.Files["measurement.json"]=Encoding.UTF8.GetBytes(result.ToString());
                 if(exportMeshes){
-                    var meshData=new JObject{["format"]="indexed_triangles_v1",["sampleId"]=job.Id,["identity"]=identity.DeepClone(),["units"]="metres",["source"]=source,["frameToWorldRows"]=MatrixRows(frameToWorld),["geometryStamp"]=result["geometryStamp"].DeepClone(),["exclusions"]=snap.Exclusions.DeepClone(),
-                        ["meshes"]=new JArray(snap.Meshes.Select(m=>new JObject{["partId"]=m.PartId,["groupIndex"]=m.Group,["vertices"]=new JArray(m.Vertices.Select(v=>new JArray(v.X,v.Y,v.Z))),["indices"]=new JArray(m.Indices)}))};
+                    var meshData=new JObject{["format"]="indexed_triangles_v1",["sampleId"]=job.Id,["identity"]=identity.DeepClone(),["units"]="metres",["source"]=source,["frameToWorldRows"]=MatrixRows(frameToWorld),["geometryStamp"]=result["geometryStamp"].DeepClone(),["complete"]=snap.Exclusions.Count==0,["staleAtDelivery"]=stale,["captureScope"]=a["partIds"]?.DeepClone()??new JArray(),["completenessMeaning"]="Completeness of requested native renderer scope only; not all-craft correctness or visibility.",["exclusions"]=snap.Exclusions.DeepClone(),
+                        ["meshes"]=new JArray(snap.Meshes.Select(m=>{var row=new JObject{["partId"]=m.PartId,["groupIndex"]=m.Group,["vertices"]=new JArray(m.Vertices.Select(v=>new JArray(v.X,v.Y,v.Z))),["indices"]=new JArray(m.Indices)};if(m.Attributes!=null)row["attributes"]=m.Attributes;return row;}))};
+                    if(vertexAttributes!=null)meshData["vertexAttributes"]=new JArray(vertexAttributes);
                     byte[] bytes=Encoding.UTF8.GetBytes(meshData.ToString(Newtonsoft.Json.Formatting.None));
                     if(bytes.Length>80*1024*1024)throw new ApiError("geometry_budget","Mesh export exceeds 80 MiB; reduce the selected scope.");
                     artifact.Files["meshes.json"]=bytes;artifact.Manifest["meshArtifact"]="meshes.json";

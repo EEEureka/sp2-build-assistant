@@ -2,6 +2,8 @@
 
 English · [简体中文](zh-CN/Quickstart.md)
 
+For the latest [v0.7.8 release](https://github.com/EEEureka/sp2-build-assistant/releases/tag/v0.7.8), use the [SDK task workflow](SDK-0.7.8.md#run-a-modeling-task). The commands below apply to legacy 0.5.0 installations.
+
 Install the matching plugin, CLI and `sp2-build-assistant` skill. Give the skill to an agent that can run commands on the Windows machine where the game is running. Open a test craft or a working copy in the designer.
 
 ## Give the agent a concrete task

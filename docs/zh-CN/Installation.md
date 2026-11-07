@@ -1,8 +1,8 @@
-# 安装、升级与故障排查
+# 旧版 0.5.0 安装、升级与故障排查
 
 [English](../Installation.md) · 简体中文
 
-本页适用于 0.5.0 的 `sp2build` 命令行包。0.7.8 的 SDK 包使用 [单独的安装步骤](SDK-0.7.8.md)。
+最新版本为 [v0.7.8](https://github.com/EEEureka/sp2-build-assistant/releases/tag/v0.7.8)，新安装请按 [SDK 安装指南](SDK-0.7.8.md)配置。本页保留 0.5.0 的 `sp2build` 命令行包安装说明。
 
 ## 安装
 

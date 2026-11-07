@@ -17,7 +17,7 @@ def enrich(command, schema):
     if "rotationQuaternion" in p:p["rotationQuaternion"]=q
     if "frame" in p:p["frame"]=frame
     for key in ("partIds","partIdsA","partIdsB"):
-        if key in p:p[key].update(minItems=1,maxItems=2048,uniqueItems=True,items={"type":["integer","string"] if command.startswith("transform.") else "integer"})
+        if key in p:p[key].update(minItems=1,maxItems=2048,uniqueItems=True,items={"type":["integer","string"] if command.startswith("transform.") or command=="appearance.set" else "integer"})
     if "limit" in p:p["limit"].update(minimum=1,maximum=2048 if command=="appearance.get" else 1000)
     if "offset" in p and command not in ("transform.align",):p["offset"].update(minimum=0)
     if command.startswith("transform."):
@@ -28,6 +28,7 @@ def enrich(command, schema):
         schema["description"]="Rigid group change, no scaling or implicit BFS. delta: p'=pivot+Q*(p-pivot)+translation, R'=Q*R. Absolute sets the anchor's pose and preserves group offsets. Missing host/dependent pairs are rejected."
         schema["allOf"]=[{"if":{"properties":{"mode":{"const":"absolute"}}},"then":{"required":["position","rotationQuaternion"],"not":{"anyOf":[{"required":["pivot"]},{"required":["translation"]}]}},"else":{"not":{"required":["position"]}}}]
     if command=="transform.align":
+        schema["dependentRequired"]={"sourcePointId":["targetPointId"],"targetPointId":["sourcePointId"]}
         p["axis"].update(enum=["opposedNormals","jointAxes"],default="opposedNormals")
         p["offset"]["description"]="Metres in the target Part's rigid local axes. Shortest axis rotation; creates no connection."
     if command=="appearance.set":
@@ -49,8 +50,10 @@ def enrich(command, schema):
         from visual import schema as visual_schema
         p["selector"]=deepcopy(visual_schema("visual.resolve")["properties"]["groups"]["items"]["properties"]["selector"])
     if command.startswith("geometry."):
+        p['vertexAttributes']={'type':'array','minItems':1,'maxItems':2,'uniqueItems':True,'items':{'enum':['normals','tangents']},'description':'Optional actual final render attributes. Requires exportMeshes:true and source renderMesh; inverse-transpose normals, native winding preserved with parity. Budget 250000 vertices.'}
         p["exportMeshes"].update(default=False,description="Requires export:true. Save same-sample indexed triangles as meshes.json for independent local verification; does not include native textures or paint.")
         schema["allOf"]=[{"if":{"required":["exportMeshes"],"properties":{"exportMeshes":{"const":True}}},"then":{"required":["export"],"properties":{"export":{"const":True}}}}]
+        schema['allOf'].append({'if':{'required':['vertexAttributes']},'then':{'required':['exportMeshes'],'properties':{'exportMeshes':{'const':True},'source':{'const':'renderMesh'}}}})
         p["plane"]=obj({"origin":v,"normal":v},["origin","normal"])
         p["region"]=obj({"min":v,"max":v},["min","max"])
         p["sampleSpacingMetres"].update(minimum=.00001,maximum=1,default=.001)

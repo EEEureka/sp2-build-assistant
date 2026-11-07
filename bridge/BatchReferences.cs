@@ -60,6 +60,16 @@ namespace SP2BuildAssistant
             return removed;
         }
         internal bool WasDeleted(int id) { return deleted.ContainsKey(id); }
+        internal void ReplaceLifetime(int id,JObject replacement,string temporary)
+        {
+            if(!current.ContainsKey(id))throw new ApiError("stale_part_reference","A replaced object must exist at this operation boundary.");
+            var prior=current[id];generations[id]=Generation(id)+1;
+            deleted[id]=new JObject{["previous"]=prior.DeepClone(),["deletedAtOperationIndex"]=OperationIndex};
+            if(!string.IsNullOrEmpty(temporary))Add(temporary,id);
+            ReusedPartIds.Add(new JObject{["partId"]=id,["previous"]=prior.DeepClone(),["current"]=replacement.DeepClone(),
+                ["deletedAtOperationIndex"]=OperationIndex,["createdAtOperationIndex"]=OperationIndex,["temporaryIds"]=new JArray(bindings.Where(b=>b.Value.Key==id&&b.Value.Value==Generation(id)).Select(b=>b.Key))});
+            current[id]=(JObject)replacement.DeepClone();
+        }
         internal JObject LiveBindings { get { return new JObject(bindings.Where(b => b.Value.Value == Generation(b.Value.Key) && current.ContainsKey(b.Value.Key)).Select(b => new JProperty(b.Key, b.Value.Key))); } }
         internal JArray InvalidatedBindings { get { return new JArray(bindings.Where(b => b.Value.Value != Generation(b.Value.Key) || !current.ContainsKey(b.Value.Key)).Select(b => b.Key)); } }
     }

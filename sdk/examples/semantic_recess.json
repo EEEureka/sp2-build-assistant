@@ -1,0 +1,13 @@
+{
+  "component": "channel",
+  "shape": {
+    "name": "channel",
+    "start": [0, 0, 0],
+    "end": [0, 0, 2],
+    "width": 2,
+    "height": 1.5,
+    "opening_width": 1,
+    "floor_height": 0.3
+  },
+  "hypothesis": "Syntax example: an open-top U channel built from three native solids; bind contour and negative-space targets first."
+}

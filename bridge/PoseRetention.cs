@@ -33,7 +33,7 @@ namespace SP2BuildAssistant
                     foreach (var modifier in part.Modifiers)
                         if (modifier is PistonData || modifier is JointRotatorData || modifier is SuspensionData ||
                             modifier is DetacherData || modifier is BeaconLightData || modifier is LandingGearData)
-                            modifier.RestoreFromState(modifier.GenerateStateXml());
+                            NativeModifierState.Restore(modifier, modifier.GenerateStateXml(), AircraftData.CurrentXmlVersion);
                 }
             }
         }
@@ -74,12 +74,30 @@ namespace SP2BuildAssistant
             // a tolerance in snapshot validation. Each explicitly edited pose
             // channel independently goes through the native loader.
             values=nativeRotations[SnapshotState.Fingerprint(current)];
+            var currentParts=current.Element("Assembly").Element("Parts").Elements("Part").ToDictionary(p=>(int)p.Attribute("id"));
+            var requestedParts=requested.Element("Assembly").Element("Parts").Elements("Part").ToDictionary(p=>(int)p.Attribute("id"));
             return requested.Element("Assembly").Element("Parts").Elements("Part")
                 .Where(p=>values.ContainsKey((int)p.Attribute("id")) && values[(int)p.Attribute("id")].Type==(string)p.Attribute("partType"))
                 .ToDictionary(p=>(int)p.Attribute("id"),p=>{
                     var v=values[(int)p.Attribute("id")];
+                    // Attached control poses are native derivatives. Restoring
+                    // their old pose after changing the surface/host overrides
+                    // the freshly generated geometry and fails save/reopen.
+                    // Unchanged objects keep the original float retention.
+                    bool changedDerived=false;var native=Current().Aircraft.Aircraft.Assembly.GetPartById((int)p.Attribute("id"));
+                    var host=native.GetModifier<Assets.Scripts.Craft.Parts.Modifiers.ControlSurfacePartData>()?.GetFirstConnectedWing();
+                    if(host!=null){
+                        var old=currentParts[(int)p.Attribute("id")];
+                        changedDerived=!XNode.DeepEquals(old.Element("ControlSurfacePart.State"),p.Element("ControlSurfacePart.State"));
+                        XElement requestedHost;
+                        if(requestedParts.TryGetValue(host.Part.Id,out requestedHost)){
+                            var oldHost=currentParts[host.Part.Id];
+                            changedDerived=changedDerived||!XNode.DeepEquals(oldHost.Element("JWing.State"),requestedHost.Element("JWing.State"))||
+                                new[]{"position","rotation","scale"}.Any(key=>(string)oldHost.Attribute(key)!=(string)requestedHost.Attribute(key));
+                        }
+                    }
                     return new SavedRotation{Type=v.Type,Euler=v.Euler,SerializedPosition=v.SerializedPosition,Rotation=v.Rotation,Position=v.Position,
-                        KeepRotation=v.Euler==(string)p.Attribute("rotation"),KeepPosition=v.SerializedPosition==(string)p.Attribute("position")};
+                        KeepRotation=!changedDerived&&v.Euler==(string)p.Attribute("rotation"),KeepPosition=!changedDerived&&v.SerializedPosition==(string)p.Attribute("position")};
                 });
         }
         private static void RestoreNativeRotations(AircraftScript aircraft,Dictionary<int,SavedRotation> values)

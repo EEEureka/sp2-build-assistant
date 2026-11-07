@@ -1,0 +1,22 @@
+[build-system]
+requires = ["setuptools==84.0.0"]
+build-backend = "setuptools.build_meta"
+
+[project]
+name = "sp2model"
+version = "0.7.8a1"
+description = "Native Python modeling SDK for SimplePlanes 2"
+requires-python = ">=3.10"
+dependencies = []
+
+[project.scripts]
+sp2model = "sp2model.host:main"
+
+[tool.setuptools.packages.find]
+include = ["sp2model*"]
+
+[tool.setuptools.package-data]
+sp2model = ["resources/**/*", "_services/*.json", "_services/*.lock"]
+
+[tool.setuptools.exclude-package-data]
+"*" = ["**/__pycache__/*", "**/*.pyc"]

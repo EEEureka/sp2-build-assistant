@@ -2,6 +2,8 @@
 
 [English](../CLI-Usage.md) · 简体中文
 
+最新 [v0.7.8](https://github.com/EEEureka/sp2-build-assistant/releases/tag/v0.7.8) 使用 [SDK 安装与建模指南](SDK-0.7.8.md)。本页保留旧版 0.5.0 CLI 参考。
+
 本页说明 0.5.0 的命令格式和返回字段。新用户可以先读[安装与升级](Installation.md)和[第一次使用](Quickstart.md)，再查下面的完整参考。
 
 示例中的 SESSION、REQUEST_ID、OPERATION_ID 和 CHECKPOINT_ID 是占位符。操作前请查询当前游戏实例、载具和零件 ID。不同版本可用的参数由 `sp2build commands schema` 返回。

@@ -33,7 +33,7 @@ namespace SP2BuildAssistant {
             }
             return new MeshSnapshot{Meshes=meshes.ToArray(),Exclusions=exclusions,Sources=sources,Parts=new JArray(),Vertices=vertices,Triangles=triangles};
         }
-        private MeshSnapshot CopyMeshSnapshot(JArray groups,Matrix4x4 worldToFrame,bool includeHidden,Job job) {
+        private MeshSnapshot CopyMeshSnapshot(JArray groups,Matrix4x4 worldToFrame,bool includeHidden,Job job,string[] vertexAttributes=null) {
             var meshes=new List<VisualCore.MeshData>();var parts=new JArray();var exclusions=new JArray();var sourceMeshes=new JArray();var claimed=new HashSet<int>();long vertices=0,triangles=0;
             foreach(JObject group in groups)foreach(int id in group["partIds"].Values<int>()){
                 lock(job.Sync)if(job.CancelRequested)throw new ApiError("cancelled","Cancelled during geometry capture.");var p=Part(id);var ps=p.PartScript;int count=0;var transform=worldToFrame*ps.transform.localToWorldMatrix;
@@ -53,12 +53,14 @@ namespace SP2BuildAssistant {
                         else {exclusions.Add(new JObject{["partId"]=id,["renderer"]=renderer.name,["reason"]="unsupported_renderer",["type"]=renderer.GetType().Name});continue;}
                         if(source==null){exclusions.Add(new JObject{["partId"]=id,["renderer"]=renderer.name,["reason"]="missing_mesh"});continue;}
                         if(!source.isReadable){exclusions.Add(new JObject{["partId"]=id,["renderer"]=renderer.name,["reason"]="mesh_not_readable"});continue;}
-                        if(vertices+source.vertexCount>1200000)throw new ApiError("geometry_budget","Vertex budget exceeded.");var raw=source.vertices;var indices=new List<int>();for(int sub=0;sub<source.subMeshCount;sub++){if(source.GetTopology(sub)!=MeshTopology.Triangles){exclusions.Add(new JObject{["partId"]=id,["renderer"]=renderer.name,["reason"]="non_triangle_submesh"});continue;}int[] idx=source.GetTriangles(sub);if(triangles+idx.Length/3>500000)throw new ApiError("geometry_budget","Triangle budget exceeded.");triangles+=idx.Length/3;indices.AddRange(idx);}
+                        if(vertices+source.vertexCount>(vertexAttributes==null?1200000:250000))throw new ApiError("geometry_budget","Vertex budget exceeded (250000 with attributes; 1200000 positions only). Reduce selected parts.");var raw=source.vertices;var indices=new List<int>();for(int sub=0;sub<source.subMeshCount;sub++){if(source.GetTopology(sub)!=MeshTopology.Triangles){exclusions.Add(new JObject{["partId"]=id,["renderer"]=renderer.name,["reason"]="non_triangle_submesh"});continue;}int[] idx=source.GetTriangles(sub);if(triangles+idx.Length/3>500000)throw new ApiError("geometry_budget","Triangle budget exceeded.");triangles+=idx.Length/3;indices.AddRange(idx);}
                         if(indices.Count==0)continue;vertices+=raw.Length;var matrix=worldToFrame*renderer.localToWorldMatrix;var copied=raw.Select(v=>VV(matrix.MultiplyPoint3x4(v))).ToArray();if(indices.Any(i=>i<0||i>=copied.Length)||indices.Count%3!=0)throw new ApiError("invalid_geometry","Invalid native triangle indices.");
                         var clean=VisualCore.CleanMesh(new VisualCore.MeshData{PartId=id,Group=group.Value<int>("index"),Vertices=copied,Indices=indices.ToArray()},out int removed);
                         if(removed>0){exclusions.Add(new JObject{["partId"]=id,["renderer"]=renderer.name,["reason"]="nonfinite_triangles",["count"]=removed});triangles-=removed;}
                         sourceMeshes.Add(new JObject{["partId"]=id,["renderer"]=renderer.name,["capturedTriangles"]=clean.Indices.Length/3,["excludedNonfiniteTriangles"]=removed});
-                        if(clean.Indices.Length==0)continue;meshes.Add(clean);count++;
+                        if(clean.Indices.Length==0)continue;
+                        if(vertexAttributes!=null)clean.Attributes=ReadRenderAttributes(source,renderer,matrix,clean,vertexAttributes);
+                        meshes.Add(clean);count++;
                     }finally{if(temp!=null)UnityEngine.Object.Destroy(temp);}
                 }
                 if(count==0)exclusions.Add(new JObject{["partId"]=id,["reason"]="no_captured_mesh"});

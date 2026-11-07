@@ -1,0 +1,8 @@
+{
+  "schemaVersion": "sp2model.release/1",
+  "productVersion": "0.7.8",
+  "pluginVersion": "0.7.8",
+  "sdkVersion": "0.7.8a1",
+  "repository": "EEEureka/sp2-build-assistant",
+  "channel": "stable"
+}

@@ -17,7 +17,7 @@ foreach ($taskItem in @('cli','knowledge','README.md','README.zh-CN.md','install
 foreach ($taskItem in @('SP2BuildAssistant.dll','build-manifest.json')) {
     Copy-Item -LiteralPath (Join-Path $PSScriptRoot ('bin\' + $taskItem)) -Destination (Join-Path $taskFull 'bin')
 }
-foreach ($taskDoc in @('Installation.md','Quickstart.md','CLI-Usage.md','Precision-Workflow.md','Designer-Screenshots.md','Visual-Usage.md','Centers-Usage.md','Release-0.5.0.md','SDK-0.7.8.md')) {
+foreach ($taskDoc in @('Installation.md','Quickstart.md','CLI-Usage.md','Precision-Workflow.md','Designer-Screenshots.md','Visual-Usage.md','Centers-Usage.md','Release-0.5.0.md','Release-0.7.8.md','SDK-0.7.8.md')) {
     Copy-Item -LiteralPath (Join-Path $PSScriptRoot ('docs\' + $taskDoc)) -Destination (Join-Path $taskFull 'docs')
     Copy-Item -LiteralPath (Join-Path $PSScriptRoot ('docs\zh-CN\' + $taskDoc)) -Destination (Join-Path $taskFull 'docs\zh-CN')
 }

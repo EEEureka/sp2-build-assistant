@@ -1,0 +1,25 @@
+{
+  "reference_id": "measured-demo",
+  "mesh_path": "examples/reference_mesh_demo.json",
+  "spec": {
+    "source": {"kind": "mesh", "locator": "selected-demo-shell-json"},
+    "frame": {
+      "units": "m", "scale": 1, "origin": [0, 0, 0],
+      "axes": {"x": "right", "y": "up", "z": "forward"},
+      "handedness": "right", "scaleSource": "user", "rotationQuaternion": [0, 0, 0, 1]
+    },
+    "scope": ["shell"],
+    "candidates": [
+      {"id": "selected-shell", "locator": "mesh:demo-shell", "transform": {"vertices": "baked source coordinates"},
+       "selection": {"partIds": ["demo-shell"]}}
+    ],
+    "selectedCandidateIds": ["selected-shell"],
+    "selectionReason": "The deliberately selected single demonstration component.",
+    "features": []
+  },
+  "sections": [
+    {"id": "shell-sections", "component": "shell", "partIds": ["demo-shell"],
+     "axis": [0, 0, 1], "fractions": [0.1, 0.5, 0.9], "up": [0, 1, 0],
+     "viewId": "front", "tolerance_m": 0.01}
+  ]
+}

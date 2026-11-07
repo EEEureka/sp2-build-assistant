@@ -22,10 +22,12 @@ SP2 Build Assistant 让 AI Agent 能直接使用 **Windows 上的 SimplePlanes 2
 
 ## 开始使用
 
-1. [安装与连接](docs/zh-CN/Installation.md)
-2. [让 Agent 完成第一次建模任务](docs/zh-CN/Quickstart.md)
-3. [查阅 CLI 手册](docs/zh-CN/CLI-Usage.md)
+1. [下载 v0.7.8](https://github.com/EEEureka/sp2-build-assistant/releases/tag/v0.7.8)，按 [SDK 与插件安装指南](docs/zh-CN/SDK-0.7.8.md)配置
+2. [让 Agent 完成第一次建模任务](docs/zh-CN/SDK-0.7.8.md#用-sdk-做一轮建模)
+3. 查阅完整安装包中随附的 API 与建模工作流参考。
 
 专项工作流见[局部精修](docs/zh-CN/Precision-Workflow.md)、[原生截图](docs/zh-CN/Designer-Screenshots.md)、[网格分析](docs/zh-CN/Visual-Usage.md)和[三心分析](docs/zh-CN/Centers-Usage.md)。
 
-当前仓库基线对应 [0.5.0 版本说明](docs/zh-CN/Release-0.5.0.md)。如果已取得 0.7.8 安装包，请从 [SDK 安装与建模指南](docs/zh-CN/SDK-0.7.8.md)开始。
+最新版本为 **0.7.8**，包含插件 0.7.8 与 Python SDK 0.7.8a1。Release 提供完整 Windows 安装包和 SHA-256 校验文件。 [版本说明](docs/zh-CN/Release-0.7.8.md)
+
+对应产品源码见 [v0.7.8 标签](https://github.com/EEEureka/sp2-build-assistant/tree/v0.7.8)。已有旧版安装可继续查阅 [0.5.0 CLI 文档](docs/zh-CN/Installation.md)。

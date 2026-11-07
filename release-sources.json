@@ -1,0 +1,1195 @@
+{
+  "productVersion": "0.7.8",
+  "sdkVersion": "0.7.8a1",
+  "sources": [
+    {
+      "path": "sdk/sp2model/__init__.py",
+      "sha256": "6b09af8f7658c79658b44e00f1a7a4135e46f6a6d226bc5d6acf5694dcdf3b0f",
+      "gitBlobSha256": "62b6a77e0a5046654917898e69d2715f3c78bc54d3d45613f5f153d7fd2e3e14"
+    },
+    {
+      "path": "sdk/sp2model/__main__.py",
+      "sha256": "a658239137c8308f2e9d342b077ac639d7f11700397cedac88006bc6fafe3052",
+      "gitBlobSha256": "a658239137c8308f2e9d342b077ac639d7f11700397cedac88006bc6fafe3052"
+    },
+    {
+      "path": "sdk/sp2model/artifacts.py",
+      "sha256": "a41fecaa3f68d4ef44296264248827e9a805475979846e199117499156c87d47",
+      "gitBlobSha256": "a41fecaa3f68d4ef44296264248827e9a805475979846e199117499156c87d47"
+    },
+    {
+      "path": "sdk/sp2model/command_host.py",
+      "sha256": "a9799da18fd6b956540e9b862229832c38b6f7c883707154e9abf06188dc54b4",
+      "gitBlobSha256": "a9799da18fd6b956540e9b862229832c38b6f7c883707154e9abf06188dc54b4"
+    },
+    {
+      "path": "sdk/sp2model/delivery.py",
+      "sha256": "603f7099755735667d43d9ea3c8d3a13297f39949450560d7c3343b7343ee4db",
+      "gitBlobSha256": "603f7099755735667d43d9ea3c8d3a13297f39949450560d7c3343b7343ee4db"
+    },
+    {
+      "path": "sdk/sp2model/errors.py",
+      "sha256": "f6dd81fde2a3560cc8d9fa0a7d451a67ef1afb6566482df7a968eb238643f7da",
+      "gitBlobSha256": "f6dd81fde2a3560cc8d9fa0a7d451a67ef1afb6566482df7a968eb238643f7da"
+    },
+    {
+      "path": "sdk/sp2model/geometry.py",
+      "sha256": "6d2db67b12bdc7768715393dcb7b9ad0defae36b49d7b2565ad91c7c1b266252",
+      "gitBlobSha256": "6d2db67b12bdc7768715393dcb7b9ad0defae36b49d7b2565ad91c7c1b266252"
+    },
+    {
+      "path": "sdk/sp2model/hard_surfaces.py",
+      "sha256": "59be0cc484f0722d0faf240c67e4a02cf088c583b92a684cc46eb6c78d120734",
+      "gitBlobSha256": "59be0cc484f0722d0faf240c67e4a02cf088c583b92a684cc46eb6c78d120734"
+    },
+    {
+      "path": "sdk/sp2model/host.py",
+      "sha256": "e55537e53542768671621a692940281f25b78d61053abdb2757f08089d0d6633",
+      "gitBlobSha256": "e55537e53542768671621a692940281f25b78d61053abdb2757f08089d0d6633"
+    },
+    {
+      "path": "sdk/sp2model/journal.py",
+      "sha256": "400663553099d27f3b148a5976ca37f862191966d939482b2fa057c04de43a05",
+      "gitBlobSha256": "400663553099d27f3b148a5976ca37f862191966d939482b2fa057c04de43a05"
+    },
+    {
+      "path": "sdk/sp2model/knowledge.py",
+      "sha256": "f6cece6ac03ca587a008c7d52cf0f8a80cb9a1d5bb2b0b9ddbc9c7d4cc695934",
+      "gitBlobSha256": "f6cece6ac03ca587a008c7d52cf0f8a80cb9a1d5bb2b0b9ddbc9c7d4cc695934"
+    },
+    {
+      "path": "sdk/sp2model/logic.py",
+      "sha256": "460b6edb74b049586efa5803f30a6e8c8ebb033bd968fe80768bcd8e22dbb674",
+      "gitBlobSha256": "460b6edb74b049586efa5803f30a6e8c8ebb033bd968fe80768bcd8e22dbb674"
+    },
+    {
+      "path": "sdk/sp2model/mesh.py",
+      "sha256": "c97c762ae9033a6f9e14887a1e5af2b14f9ecfbfc38c786863c5eb8356928463",
+      "gitBlobSha256": "c97c762ae9033a6f9e14887a1e5af2b14f9ecfbfc38c786863c5eb8356928463"
+    },
+    {
+      "path": "sdk/sp2model/model_compare.py",
+      "sha256": "2629502ae91113805479976e6b730d6610c913d9af3e569a94e9ac48565ce9cf",
+      "gitBlobSha256": "2629502ae91113805479976e6b730d6610c913d9af3e569a94e9ac48565ce9cf"
+    },
+    {
+      "path": "sdk/sp2model/model_geometry.py",
+      "sha256": "d5c519c89df511214908d6afbc81f773d2a1d4d9c5e6cd69fdd15188c809f6e5",
+      "gitBlobSha256": "d5c519c89df511214908d6afbc81f773d2a1d4d9c5e6cd69fdd15188c809f6e5"
+    },
+    {
+      "path": "sdk/sp2model/model_help.py",
+      "sha256": "4ff13cbbb96bb41167be4ee62b2615d0d2a66a7f952d4a28c5924c8d6fab5450",
+      "gitBlobSha256": "4ff13cbbb96bb41167be4ee62b2615d0d2a66a7f952d4a28c5924c8d6fab5450"
+    },
+    {
+      "path": "sdk/sp2model/model_host.py",
+      "sha256": "fa1104b0c9a51fe4653146add46a01550423795d8485e8bb2706443c21878a17",
+      "gitBlobSha256": "fa1104b0c9a51fe4653146add46a01550423795d8485e8bb2706443c21878a17"
+    },
+    {
+      "path": "sdk/sp2model/modeling.py",
+      "sha256": "b1ba4d3eb605106fe0e0c8d151264383ccf8c65767a216e8164940ae197893ff",
+      "gitBlobSha256": "b1ba4d3eb605106fe0e0c8d151264383ccf8c65767a216e8164940ae197893ff"
+    },
+    {
+      "path": "sdk/sp2model/native_state.py",
+      "sha256": "f0b5b414f02900e4fc69060c29fae062739fb751ab9470bab33f97a4c225c3b6",
+      "gitBlobSha256": "f0b5b414f02900e4fc69060c29fae062739fb751ab9470bab33f97a4c225c3b6"
+    },
+    {
+      "path": "sdk/sp2model/native.py",
+      "sha256": "fa305f2d77c850f2a5d4241aa494bc06b3b11ea65a26d998e74806437bee5bb4",
+      "gitBlobSha256": "fa305f2d77c850f2a5d4241aa494bc06b3b11ea65a26d998e74806437bee5bb4"
+    },
+    {
+      "path": "sdk/sp2model/objects.py",
+      "sha256": "2fccbb83d27f91f4c45aa7d21dceb5592b2e012ebaadfae71e068e298b5ad7a6",
+      "gitBlobSha256": "2fccbb83d27f91f4c45aa7d21dceb5592b2e012ebaadfae71e068e298b5ad7a6"
+    },
+    {
+      "path": "sdk/sp2model/plan.py",
+      "sha256": "15bdaf00a4ed9320204a997263f428f37925aed7567dfc24e76e93831cbb1ebb",
+      "gitBlobSha256": "15bdaf00a4ed9320204a997263f428f37925aed7567dfc24e76e93831cbb1ebb"
+    },
+    {
+      "path": "sdk/sp2model/project.py",
+      "sha256": "c736bab88969d9a8aea7b5c90f40601c1cb5399a3ac2859dfb73433677185dfe",
+      "gitBlobSha256": "c736bab88969d9a8aea7b5c90f40601c1cb5399a3ac2859dfb73433677185dfe"
+    },
+    {
+      "path": "sdk/sp2model/reference_import.py",
+      "sha256": "0da001d8b06e4cba7a113a4341af16f1efa3900a3d8d5969083612de27b045ca",
+      "gitBlobSha256": "0da001d8b06e4cba7a113a4341af16f1efa3900a3d8d5969083612de27b045ca"
+    },
+    {
+      "path": "sdk/sp2model/reference_registry.py",
+      "sha256": "b72c6d06f16087ceadfddd41fa0ac08a707e38fdd5c0cb9c7cc701700532c90d",
+      "gitBlobSha256": "b72c6d06f16087ceadfddd41fa0ac08a707e38fdd5c0cb9c7cc701700532c90d"
+    },
+    {
+      "path": "sdk/sp2model/registry.py",
+      "sha256": "c5b6119bae96628a9b1e370a4b2596bf5f40f3efea5331f958ca10e8f31db9c9",
+      "gitBlobSha256": "c5b6119bae96628a9b1e370a4b2596bf5f40f3efea5331f958ca10e8f31db9c9"
+    },
+    {
+      "path": "sdk/sp2model/runtime.py",
+      "sha256": "86f1cd7eeaf05f0a05e938e96a562ac13733232296175e3f2d5825e37d515b7c",
+      "gitBlobSha256": "86f1cd7eeaf05f0a05e938e96a562ac13733232296175e3f2d5825e37d515b7c"
+    },
+    {
+      "path": "sdk/sp2model/semantic.py",
+      "sha256": "bbbb13e192037e3c617553df8575ca74b83068de831f9cd5f15989a5140450e8",
+      "gitBlobSha256": "bbbb13e192037e3c617553df8575ca74b83068de831f9cd5f15989a5140450e8"
+    },
+    {
+      "path": "sdk/sp2model/session.py",
+      "sha256": "c1bb082dbea9e0f39f919ac07e3e73f25d9491910cf6dd70bab316bd284e5b01",
+      "gitBlobSha256": "c1bb082dbea9e0f39f919ac07e3e73f25d9491910cf6dd70bab316bd284e5b01"
+    },
+    {
+      "path": "sdk/sp2model/surface.py",
+      "sha256": "d3937add11525adb1fbd3d8dd823b9dc89572795bb23b3e2026e9aa9e082f68b",
+      "gitBlobSha256": "d3937add11525adb1fbd3d8dd823b9dc89572795bb23b3e2026e9aa9e082f68b"
+    },
+    {
+      "path": "sdk/sp2model/task.py",
+      "sha256": "a9caf7f0e98a6022e4e145497c589a273c335835599a98bcdf544bca43179c1c",
+      "gitBlobSha256": "a9caf7f0e98a6022e4e145497c589a273c335835599a98bcdf544bca43179c1c"
+    },
+    {
+      "path": "sdk/sp2model/transport.py",
+      "sha256": "db258172c188ee6bf9b7ed4ee2c5f10426db7cfa7998368cdcb1cb3d24df21e6",
+      "gitBlobSha256": "db258172c188ee6bf9b7ed4ee2c5f10426db7cfa7998368cdcb1cb3d24df21e6"
+    },
+    {
+      "path": "sdk/sp2model/update_worker.py",
+      "sha256": "47e7f85b65275a5a0512e643fae7a97cab3d4b4d97928910d720c8ff93e4d672",
+      "gitBlobSha256": "47e7f85b65275a5a0512e643fae7a97cab3d4b4d97928910d720c8ff93e4d672"
+    },
+    {
+      "path": "sdk/sp2model/updates.py",
+      "sha256": "8600ed6456b7c314e22150d8eddc3b6533c18022b1f362b3742eaa59da547ad4",
+      "gitBlobSha256": "8600ed6456b7c314e22150d8eddc3b6533c18022b1f362b3742eaa59da547ad4"
+    },
+    {
+      "path": "sdk/sp2model/verification.py",
+      "sha256": "0cea28f36352debc0e961ad291b09f9fea945104d011da6f7abcc158d8224532",
+      "gitBlobSha256": "0cea28f36352debc0e961ad291b09f9fea945104d011da6f7abcc158d8224532"
+    },
+    {
+      "path": "sdk/sp2model/wings.py",
+      "sha256": "e6525d779e04d4afcf89b000dcb1002eec5b3bbb9436e6ed850cf5cf0a81c80d",
+      "gitBlobSha256": "e6525d779e04d4afcf89b000dcb1002eec5b3bbb9436e6ed850cf5cf0a81c80d"
+    },
+    {
+      "path": "sdk/sp2model/workflows.py",
+      "sha256": "4c0d3dfeb739739385f3edd0184813068cd0658e421783cb62906bdbe0c960c7",
+      "gitBlobSha256": "4c0d3dfeb739739385f3edd0184813068cd0658e421783cb62906bdbe0c960c7"
+    },
+    {
+      "path": "sdk/sp2model/resources/contracts.json",
+      "sha256": "9fe879382d28c2da8132da88f2b6580a1832a1f5c4f107b941ea3087439a45e4",
+      "gitBlobSha256": "3d0d38de1b0479451c340d254e2c2af06dcefcf2c8dbad07d79b4bfddf4ccd26"
+    },
+    {
+      "path": "sdk/sp2model/resources/release-info.json",
+      "sha256": "12f06d58778d9ac0ac06383ebc74fff918337e58fa340db9f5e4dde091dd603f",
+      "gitBlobSha256": "12f06d58778d9ac0ac06383ebc74fff918337e58fa340db9f5e4dde091dd603f"
+    },
+    {
+      "path": "sdk/sp2model/resources/knowledge/catalog.json",
+      "sha256": "f52f1c930330764ccd7a558e69efccef53bfbdda2101d32321da9cbaa7c0525c",
+      "gitBlobSha256": "f52f1c930330764ccd7a558e69efccef53bfbdda2101d32321da9cbaa7c0525c"
+    },
+    {
+      "path": "sdk/sp2model/resources/knowledge/complex-parts.json",
+      "sha256": "f79406b8ab19c53f6ba88e6cd670b14b4a7fabb6e7bd9c8eb9859b857f727894",
+      "gitBlobSha256": "771a8b923a5b15f1d8155b6f86892eb83b151ef00bbd809b963ee00bbdfd6f91"
+    },
+    {
+      "path": "sdk/sp2model/resources/knowledge/editable-coverage.json",
+      "sha256": "3b53731c6bdb605724656a540db8986406a43baa0e51d2a5cd468bef84960c62",
+      "gitBlobSha256": "1b1afe89bfee01f88d41f301f9c6a382cd8df75c65745ade57ed3211bb05488a"
+    },
+    {
+      "path": "sdk/sp2model/resources/knowledge/funky.json",
+      "sha256": "85eaf7b7bd5c379500fa44f78cef1b906ea455d6008f30a7ed6dd04243fab39c",
+      "gitBlobSha256": "85eaf7b7bd5c379500fa44f78cef1b906ea455d6008f30a7ed6dd04243fab39c"
+    },
+    {
+      "path": "sdk/sp2model/resources/knowledge/native-adapter-evidence.json",
+      "sha256": "c593875069705108c62c5ebf2a7e03993ef6b654e0b88ea09c07c7d0f8530536",
+      "gitBlobSha256": "c593875069705108c62c5ebf2a7e03993ef6b654e0b88ea09c07c7d0f8530536"
+    },
+    {
+      "path": "sdk/sp2model/resources/knowledge/v077/funky.json",
+      "sha256": "d82ac65543ec8cf9e1ab21c0010eedc3fc005801ae20a8784ca3bf1dddd26986",
+      "gitBlobSha256": "d82ac65543ec8cf9e1ab21c0010eedc3fc005801ae20a8784ca3bf1dddd26986"
+    },
+    {
+      "path": "sdk/sp2model/resources/knowledge/v077/manifest.json",
+      "sha256": "e1ae604ca4de28b945db3cfed6265eecc54afdefc103d58fdc95dfa5c561e87d",
+      "gitBlobSha256": "75d4173dcd5af84fed5710e123ea951e8887a6c4f75dd793ab34dfc40c910d73"
+    },
+    {
+      "path": "sdk/sp2model/resources/knowledge/v077/parts.json",
+      "sha256": "6f30a6680d5d459d07bfa091077bae03c3eea657d98a1a36275e230342d77722",
+      "gitBlobSha256": "6f30a6680d5d459d07bfa091077bae03c3eea657d98a1a36275e230342d77722"
+    },
+    {
+      "path": "sdk/sp2model/resources/skill/operating-contracts.md",
+      "sha256": "53d8f536b7b1f21c8f3613a378af578d7c85ecbd34a034e31e12fc0e98a12c28",
+      "gitBlobSha256": "3fac53350c1bd1de1fc5f787d5986461114ea157e7101f7e7c39dbcf2352750c"
+    },
+    {
+      "path": "sdk/sp2model/resources/skill/SKILL.md",
+      "sha256": "9eedab5b3f557179dce60feaf098bc8ae73907adee7c903e0c001912bbbb2673",
+      "gitBlobSha256": "5112ce0e1d688719e74e5803dbfbce4341829c9201c0e95be20ff639fe8ae5bf"
+    },
+    {
+      "path": "sdk/sp2model/resources/skill/examples/build_body.py",
+      "sha256": "ff38d980e66e9f4f3e210df87a0410b8f6bce7c8353ab8a54e40b5393f24e1a2",
+      "gitBlobSha256": "ff38d980e66e9f4f3e210df87a0410b8f6bce7c8353ab8a54e40b5393f24e1a2"
+    },
+    {
+      "path": "sdk/sp2model/resources/skill/examples/modeling_task.py",
+      "sha256": "d51bf8dbf88070f4c8425f9e70b4d37892c177ba161e4f39dc3a47cc90840d22",
+      "gitBlobSha256": "d51bf8dbf88070f4c8425f9e70b4d37892c177ba161e4f39dc3a47cc90840d22"
+    },
+    {
+      "path": "sdk/sp2model/resources/skill/examples/reference_mesh_demo.json",
+      "sha256": "acb26841410cfb834e76629afc13c09f1df7a9c25100f3b262a32560a996665c",
+      "gitBlobSha256": "acb26841410cfb834e76629afc13c09f1df7a9c25100f3b262a32560a996665c"
+    },
+    {
+      "path": "sdk/sp2model/resources/skill/examples/semantic_bind_mesh.json",
+      "sha256": "ad8df5fccb0aefbd27ba149c65175279cb13b796719e1010bef9595d8a9ed575",
+      "gitBlobSha256": "ad8df5fccb0aefbd27ba149c65175279cb13b796719e1010bef9595d8a9ed575"
+    },
+    {
+      "path": "sdk/sp2model/resources/skill/examples/semantic_deliver.json",
+      "sha256": "fe4ea31cc5c81d131e9faf1e6fcf7dbc5e79a080ee1fd68568e19b5899f41d21",
+      "gitBlobSha256": "fe4ea31cc5c81d131e9faf1e6fcf7dbc5e79a080ee1fd68568e19b5899f41d21"
+    },
+    {
+      "path": "sdk/sp2model/resources/skill/examples/semantic_help.json",
+      "sha256": "40e3980f2292f19b133898cebf9de27d2fe3382e2444eab0a27c556ae9a0e08a",
+      "gitBlobSha256": "40e3980f2292f19b133898cebf9de27d2fe3382e2444eab0a27c556ae9a0e08a"
+    },
+    {
+      "path": "sdk/sp2model/resources/skill/examples/semantic_loft.json",
+      "sha256": "e2d2f6a0f380e1b98a05e3ce9b4734b5990b01aca6b7d8d42cac6b60dbcb5f3e",
+      "gitBlobSha256": "e2d2f6a0f380e1b98a05e3ce9b4734b5990b01aca6b7d8d42cac6b60dbcb5f3e"
+    },
+    {
+      "path": "sdk/sp2model/resources/skill/examples/semantic_marker.json",
+      "sha256": "7bb74aa7c9e612c4c4332dda510f7ba6a63fcc3137c82515382c46c1a3f0e640",
+      "gitBlobSha256": "7bb74aa7c9e612c4c4332dda510f7ba6a63fcc3137c82515382c46c1a3f0e640"
+    },
+    {
+      "path": "sdk/sp2model/resources/skill/examples/semantic_measure_mesh.json",
+      "sha256": "7017640753d19d28ef2318af25310d9c09d9f9b7928e21fa7391fd43770ca014",
+      "gitBlobSha256": "7017640753d19d28ef2318af25310d9c09d9f9b7928e21fa7391fd43770ca014"
+    },
+    {
+      "path": "sdk/sp2model/resources/skill/examples/semantic_prism.json",
+      "sha256": "9aa09d236ed103bef44c5cde09d49079fd72a8d1958c946884b0ba9da19d6f5a",
+      "gitBlobSha256": "9aa09d236ed103bef44c5cde09d49079fd72a8d1958c946884b0ba9da19d6f5a"
+    },
+    {
+      "path": "sdk/sp2model/resources/skill/examples/semantic_recess.json",
+      "sha256": "0fe645b6f2b3fbd1712520b6c6668ae1a07a62e26462ceec277d7b138a664266",
+      "gitBlobSha256": "0fe645b6f2b3fbd1712520b6c6668ae1a07a62e26462ceec277d7b138a664266"
+    },
+    {
+      "path": "sdk/sp2model/resources/skill/examples/semantic_reference.json",
+      "sha256": "38fa9c05d43f47ffc72f13f94e693e25806abdf2e2fa62f8c4b11b5afe2637e2",
+      "gitBlobSha256": "38fa9c05d43f47ffc72f13f94e693e25806abdf2e2fa62f8c4b11b5afe2637e2"
+    },
+    {
+      "path": "sdk/sp2model/resources/skill/examples/semantic_refine.json",
+      "sha256": "29ea6472410f75a7f049ab97ea9e5f1464cf5416c2b66b1cd1b725e241bca29e",
+      "gitBlobSha256": "29ea6472410f75a7f049ab97ea9e5f1464cf5416c2b66b1cd1b725e241bca29e"
+    },
+    {
+      "path": "sdk/sp2model/resources/skill/examples/semantic_task.json",
+      "sha256": "9ab082b30bcbc5fbeb5fe5f27d3c3e147d53fdfa46fcdabd16f0c39dbffbb5a5",
+      "gitBlobSha256": "9ab082b30bcbc5fbeb5fe5f27d3c3e147d53fdfa46fcdabd16f0c39dbffbb5a5"
+    },
+    {
+      "path": "sdk/sp2model/resources/skill/examples/task_body.py",
+      "sha256": "6a9abd6b7d62612b73bbe3afbd1341491d90ab05edda6a9198156e3309a18fa7",
+      "gitBlobSha256": "6a9abd6b7d62612b73bbe3afbd1341491d90ab05edda6a9198156e3309a18fa7"
+    },
+    {
+      "path": "sdk/sp2model/resources/skill/examples/task_repeat.py",
+      "sha256": "f0664fbac2d7047221387d292d6a53a5ee085dbb3c48b6037ff18e375fe9cee4",
+      "gitBlobSha256": "f0664fbac2d7047221387d292d6a53a5ee085dbb3c48b6037ff18e375fe9cee4"
+    },
+    {
+      "path": "sdk/sp2model/resources/skill/references/Advanced-Native.md",
+      "sha256": "5047ccb5c0004df6eda2526cebc130800f740f998b63c047ba47e0515d2679ec",
+      "gitBlobSha256": "e1449890ee8c4687222c880875ccf5d049918eb35eb7abab27cd954f1f51c169"
+    },
+    {
+      "path": "sdk/sp2model/resources/skill/references/API.md",
+      "sha256": "c794266eab7d02e5c62296da8dad3b4f3b361ff25ddbdcc53029854b86e4d20c",
+      "gitBlobSha256": "098310f776da8b8874bbe9dc0fc1dbfe3fceadfdae751b0505dcc01cad45fb33"
+    },
+    {
+      "path": "sdk/sp2model/resources/skill/references/build-loop.md",
+      "sha256": "a6178c7b5af46dac8b9ae3290268dc0af0e5300db0233d092385a0c7a1886325",
+      "gitBlobSha256": "311c44d5c7c216488dfce1cd173f5048e7c09e564f029df23962d626950ec33f"
+    },
+    {
+      "path": "sdk/sp2model/resources/skill/references/centers.md",
+      "sha256": "4b6dd0f8f62de147959f349e472665492ce29865bf1733017f1ecb6e7d35034e",
+      "gitBlobSha256": "be816b6a5a5377fdcf3d9ef7fcc69e1fe9629649be70fb3a40d90cb4b028a4fb"
+    },
+    {
+      "path": "sdk/sp2model/resources/skill/references/complex-shapes.md",
+      "sha256": "bfe07de1e87e1fcd3ae3287cd72fea2f2b8a2a945e352515e93698564beb6a79",
+      "gitBlobSha256": "14e5f5ebc0350873dcc8340e72340a58bc19b91e9fa8deda11b4d35849778ff1"
+    },
+    {
+      "path": "sdk/sp2model/resources/skill/references/component-selection.md",
+      "sha256": "9ee835a65b0470eb5464dae92d6697a8a29055a15ffd7faa80ae67d105216f81",
+      "gitBlobSha256": "45e5a09a40e5987c8cf331583ff55a86885a96e1083fde055910ea50818d0fa3"
+    },
+    {
+      "path": "sdk/sp2model/resources/skill/references/continuity-review.md",
+      "sha256": "643b1a58b46d2280798f3af66bc1c2a2bc4808ccfb2bacf37e7fa189405f4e2f",
+      "gitBlobSha256": "0255f3e35abd58e124830e554ab8e4cb67357b5a921cfa33589fbca8d4e93c3b"
+    },
+    {
+      "path": "sdk/sp2model/resources/skill/references/designer-navigation.md",
+      "sha256": "b786fbb64c382d1ff1c1c7c5eef9fec61bb6aa58d197801f16c053bafb34cb62",
+      "gitBlobSha256": "55a11f6de777dd91ae2d16c12bed7a5095a34c3d62d232b1da4ad88bf20e33b3"
+    },
+    {
+      "path": "sdk/sp2model/resources/skill/references/designer-screenshots.md",
+      "sha256": "da7041054b0d3059a4f885ba68c94a0c84697411e9a109c65c9624f170e510c4",
+      "gitBlobSha256": "d303aac417fcc6b3fb7adeb0874fea50ffaedbeedf5bd184a4110ccec7d9fa69"
+    },
+    {
+      "path": "sdk/sp2model/resources/skill/references/edits.md",
+      "sha256": "4a7a62318fc6aaef3b2e88591beec74196f1a594d2bd84bf59f22f872364dbbe",
+      "gitBlobSha256": "15428f730a5335dc507ba9b63b453afd78e3cd05638793350c15469fee688624"
+    },
+    {
+      "path": "sdk/sp2model/resources/skill/references/Hard-Surfaces.md",
+      "sha256": "466e6f24567d8c453cb9e8fe123da386adc20fc29bb45655d891e092c0ed8d7a",
+      "gitBlobSha256": "7f8365edb0f91b68b172bc5e186624346b24eef5916ccc84bc27f89ef1c2e528"
+    },
+    {
+      "path": "sdk/sp2model/resources/skill/references/Knowledge-Funky.md",
+      "sha256": "245f3d00bf4845e602d07f7bff1b57233cc026ad15c476e502e978e23928b2bf",
+      "gitBlobSha256": "434008f60d4495a75979c2e9fd79a525424e9eeb29522e36d0fe2bbfba1d754f"
+    },
+    {
+      "path": "sdk/sp2model/resources/skill/references/Knowledge.md",
+      "sha256": "72ca598b9fe20cb2bbbd19f2d20b33bca77f2c27a3b72384d34365f9102a1a0b",
+      "gitBlobSha256": "fd56019d3a0b8f1c9e2fa5527fc3ec98d38450caeb74d3d0a85aa2efc7c761cd"
+    },
+    {
+      "path": "sdk/sp2model/resources/skill/references/low-part-native-modeling.md",
+      "sha256": "e470ba111ee9053f59bb167f0eee4f24f3e294f9fdd494f82743890ebadc92f5",
+      "gitBlobSha256": "e8a57ebfda3cb43056e1aaf02ec7f44a2a8003fb893491c22d263ec23ebf7a1d"
+    },
+    {
+      "path": "sdk/sp2model/resources/skill/references/Modeling-Reference-Features.md",
+      "sha256": "c2d42cdeb8facbb090ddf9393083a7bf18f3afcbb2edf62752e17823fd8ed5c8",
+      "gitBlobSha256": "b0710ebac0db32bd8e1723054925d69104f1a3a6839abfcd74655cfb1faff5a1"
+    },
+    {
+      "path": "sdk/sp2model/resources/skill/references/Modeling-Semantic-Workflow.md",
+      "sha256": "ac48bd893f69278e5cbf5ff1403b3e517099e332b5ecd546f42f1dd868230c80",
+      "gitBlobSha256": "f92693a090007e0b67e1120d990ee6f499b79a8a78ca328a3b3efcfb649734a9"
+    },
+    {
+      "path": "sdk/sp2model/resources/skill/references/Modeling-Workflow.md",
+      "sha256": "1397b1b277b5c523afcb2da237ee827e1f97545888c684ee187e5733af44abeb",
+      "gitBlobSha256": "4aa5ac7d13e18a8d8e8a8f82bb0edf36d8024f6f9e2c8c76ba946abc500e9e17"
+    },
+    {
+      "path": "sdk/sp2model/resources/skill/references/precision-building.md",
+      "sha256": "3c5204a9d9841d6d1f30c97d4d7523080634eba177891b20d659853c7006c454",
+      "gitBlobSha256": "faed59c3b2a37316d75b20324ca5263db1d532f7a814c39ce741ff451eb70678"
+    },
+    {
+      "path": "sdk/sp2model/resources/skill/references/reference-workflow.md",
+      "sha256": "efadcb6e10d6ccfef4260bc9416a160a15266f9dc07fc914a4f8bb6590877281",
+      "gitBlobSha256": "a34b640d2a99a2af26a3bc85853c4c57a40eeb77431f1f7cfd55c290e7b0761a"
+    },
+    {
+      "path": "sdk/sp2model/resources/skill/references/rule-migration.json",
+      "sha256": "dd6ebc156eb2e3d90a34f55337679c5a89129920be56ad753bece1aa0d2f0ce1",
+      "gitBlobSha256": "8cee4b161774c0e9640c3345ab90c43e31f9b656bc04f67aaee495b21b0ec78a"
+    },
+    {
+      "path": "sdk/sp2model/resources/skill/references/scoped-collaboration.md",
+      "sha256": "453de164abc4da3f7e1567852eca488540c0013e3dadf692cb6b7d4f7f5acf26",
+      "gitBlobSha256": "8a3e8256fc5058c35a8ed43e90011bf612ae68744bfaf573d5ab566ada056bce"
+    },
+    {
+      "path": "sdk/sp2model/resources/skill/references/Services.md",
+      "sha256": "72288c842020e441f72389444ea579d5b961eae0a9cc846db5c2cbd1e6651167",
+      "gitBlobSha256": "d11609715740dccf60f99bc8ec970fa089f1aabada8cfb584c3a00b691b23d52"
+    },
+    {
+      "path": "sdk/sp2model/resources/skill/references/Updates.md",
+      "sha256": "093b705e397dbc9a494ffd045406fbb19f78b1fecb3087f5c8d7d6b591b3a625",
+      "gitBlobSha256": "cc5e69f73238707775abcda6135ac032a63a7583293ccdd8988b8ee0a15b4019"
+    },
+    {
+      "path": "sdk/sp2model/resources/skill/references/visual.md",
+      "sha256": "4a7b6ecb2ee3c976f9882e063893ad9638deb1cd5b94a9b2cfc84e0219807d00",
+      "gitBlobSha256": "d964d53cbd52c8fae32490fc5bfefc93223e8a14ed8c73fe91ac9ebbf937e178"
+    },
+    {
+      "path": "sdk/sp2model/resources/skill/scripts/native_mesh_review.py",
+      "sha256": "6118f3e1cbff55b483e01f750babd9c8a0654007fbdf97c932932bcb64b8cf0a",
+      "gitBlobSha256": "6118f3e1cbff55b483e01f750babd9c8a0654007fbdf97c932932bcb64b8cf0a"
+    },
+    {
+      "path": "sdk/sp2model/_services/__init__.py",
+      "sha256": "4a407da3bd2017c83b757fd09304de3f53319ea4e0a32c3af7ccfdeb06930daa",
+      "gitBlobSha256": "4a407da3bd2017c83b757fd09304de3f53319ea4e0a32c3af7ccfdeb06930daa"
+    },
+    {
+      "path": "sdk/sp2model/_services/boundary_review.py",
+      "sha256": "643ae0bb402c65a599f831de16df330c9d6f98be5a86fa9f1f0acafadba3cafc",
+      "gitBlobSha256": "643ae0bb402c65a599f831de16df330c9d6f98be5a86fa9f1f0acafadba3cafc"
+    },
+    {
+      "path": "sdk/sp2model/_services/build_guidance.py",
+      "sha256": "903c4f43971ffcb312e0601414d404ce57a7841b7b200c2bcacbaed9823c2bc1",
+      "gitBlobSha256": "903c4f43971ffcb312e0601414d404ce57a7841b7b200c2bcacbaed9823c2bc1"
+    },
+    {
+      "path": "sdk/sp2model/_services/build_loop.py",
+      "sha256": "4b9defb33be822f18fcd52467f0f96dc40aba3b7f95a5b7b2f4d4188f730f05b",
+      "gitBlobSha256": "4b9defb33be822f18fcd52467f0f96dc40aba3b7f95a5b7b2f4d4188f730f05b"
+    },
+    {
+      "path": "sdk/sp2model/_services/build_review_cli.py",
+      "sha256": "f063e8933e6ce52f7013e44cfe7155ef5e93742cf881902a15a6d01da8d4f966",
+      "gitBlobSha256": "f063e8933e6ce52f7013e44cfe7155ef5e93742cf881902a15a6d01da8d4f966"
+    },
+    {
+      "path": "sdk/sp2model/_services/centers.py",
+      "sha256": "181422c6a731787529fb9981e16566a84d8c19aecd6931f2a648c8603266fa98",
+      "gitBlobSha256": "181422c6a731787529fb9981e16566a84d8c19aecd6931f2a648c8603266fa98"
+    },
+    {
+      "path": "sdk/sp2model/_services/contracts.py",
+      "sha256": "1046ff1515df4a402cf8b86b1f965d7acccaabd86947bd2c71cebd9d20a593fd",
+      "gitBlobSha256": "1046ff1515df4a402cf8b86b1f965d7acccaabd86947bd2c71cebd9d20a593fd"
+    },
+    {
+      "path": "sdk/sp2model/_services/dependencies.py",
+      "sha256": "9384a0e79b408b1219e92a3058fa884ada18d39a0bd92abcddc9cd2722c52d30",
+      "gitBlobSha256": "9384a0e79b408b1219e92a3058fa884ada18d39a0bd92abcddc9cd2722c52d30"
+    },
+    {
+      "path": "sdk/sp2model/_services/designer_control.py",
+      "sha256": "edf625e75e40499bd7e7aaedf60dd19c08e78b90e7e19be20df83112d12bfbdb",
+      "gitBlobSha256": "edf625e75e40499bd7e7aaedf60dd19c08e78b90e7e19be20df83112d12bfbdb"
+    },
+    {
+      "path": "sdk/sp2model/_services/feature_registry.py",
+      "sha256": "99376ee6b532a34f1c479c52e1478d59c6bb03c1899bc727a292f83d1f3ed595",
+      "gitBlobSha256": "99376ee6b532a34f1c479c52e1478d59c6bb03c1899bc727a292f83d1f3ed595"
+    },
+    {
+      "path": "sdk/sp2model/_services/fit_optimizer.py",
+      "sha256": "90e81f3294c6b0a8e1c9372cb2ea614625bbb565ef33c3852580b05896d1b7f4",
+      "gitBlobSha256": "90e81f3294c6b0a8e1c9372cb2ea614625bbb565ef33c3852580b05896d1b7f4"
+    },
+    {
+      "path": "sdk/sp2model/_services/fit_parameters.py",
+      "sha256": "cde9f07aa5520b61b60a3b0bf22f3790d597121b3408c8f3f71309650461d89b",
+      "gitBlobSha256": "cde9f07aa5520b61b60a3b0bf22f3790d597121b3408c8f3f71309650461d89b"
+    },
+    {
+      "path": "sdk/sp2model/_services/fit_runner.py",
+      "sha256": "cb7378d7a0497d3c81e4bbbb9d3a21d93a1c84bccc109f5d3130a7b4bb88674b",
+      "gitBlobSha256": "cb7378d7a0497d3c81e4bbbb9d3a21d93a1c84bccc109f5d3130a7b4bb88674b"
+    },
+    {
+      "path": "sdk/sp2model/_services/modeling_contracts.py",
+      "sha256": "2e3e4f765cc2ea8b6e751969bc1db7c49491766e2dbdebb0f9f5c78bb474f5c3",
+      "gitBlobSha256": "2e3e4f765cc2ea8b6e751969bc1db7c49491766e2dbdebb0f9f5c78bb474f5c3"
+    },
+    {
+      "path": "sdk/sp2model/_services/native_capability_audit.py",
+      "sha256": "f446ef8cf849181f8360aca21204f17453da5d1c3acaf47e031b9abdc0917ac2",
+      "gitBlobSha256": "f446ef8cf849181f8360aca21204f17453da5d1c3acaf47e031b9abdc0917ac2"
+    },
+    {
+      "path": "sdk/sp2model/_services/native_fit_bridge.py",
+      "sha256": "5dc8c08bd3b151a545945ec0190ca822eee73cfb974022aa4a4f99056330783d",
+      "gitBlobSha256": "5dc8c08bd3b151a545945ec0190ca822eee73cfb974022aa4a4f99056330783d"
+    },
+    {
+      "path": "sdk/sp2model/_services/native_shape_planner.py",
+      "sha256": "696a78731fe21abdb92dcb79c58cdef1189de93a29b945d89edb78d5356300a8",
+      "gitBlobSha256": "696a78731fe21abdb92dcb79c58cdef1189de93a29b945d89edb78d5356300a8"
+    },
+    {
+      "path": "sdk/sp2model/_services/owned_process.py",
+      "sha256": "b58ffe32693c335325804689140b427cfede9f5038b3e2f9aad2672393a2fd95",
+      "gitBlobSha256": "b58ffe32693c335325804689140b427cfede9f5038b3e2f9aad2672393a2fd95"
+    },
+    {
+      "path": "sdk/sp2model/_services/part_observation.py",
+      "sha256": "a2e02bb3fa97351f03dc748fa389a9069184a23a12189119e83e250904ba7655",
+      "gitBlobSha256": "a2e02bb3fa97351f03dc748fa389a9069184a23a12189119e83e250904ba7655"
+    },
+    {
+      "path": "sdk/sp2model/_services/precision_contracts.py",
+      "sha256": "be7d41caa1d0ea80b2096a9ac5f2072219eb23e03d24a5ffc01802fef3a08269",
+      "gitBlobSha256": "b0e8732930629807c08f62330a6c6df4fb279818efd989161a1f8192524c24a7"
+    },
+    {
+      "path": "sdk/sp2model/_services/projection.py",
+      "sha256": "6da07c0997d78ef86da6b7e18e402cec7c0c1e494307d7cc20786999b6949245",
+      "gitBlobSha256": "6da07c0997d78ef86da6b7e18e402cec7c0c1e494307d7cc20786999b6949245"
+    },
+    {
+      "path": "sdk/sp2model/_services/quality_gates.py",
+      "sha256": "e6c9b189f4232d8a14fb8e5e99c60dc885efcdf467a86307984d84bd0e7b2404",
+      "gitBlobSha256": "e6c9b189f4232d8a14fb8e5e99c60dc885efcdf467a86307984d84bd0e7b2404"
+    },
+    {
+      "path": "sdk/sp2model/_services/quality_metrics.py",
+      "sha256": "109bd66cd81eea58218577099ad2dff936d6fb58c626e19f619b6d4feaa22d1a",
+      "gitBlobSha256": "109bd66cd81eea58218577099ad2dff936d6fb58c626e19f619b6d4feaa22d1a"
+    },
+    {
+      "path": "sdk/sp2model/_services/reference_annotations.py",
+      "sha256": "882fd32bfa28e4f2d50024e2fb1c1d8628f10f6e1e7aa72a91e27bc5bde7d93a",
+      "gitBlobSha256": "882fd32bfa28e4f2d50024e2fb1c1d8628f10f6e1e7aa72a91e27bc5bde7d93a"
+    },
+    {
+      "path": "sdk/sp2model/_services/reference_binding.py",
+      "sha256": "3d2d4d6c467643c4c0d2bda86b2f1fefd9768e7636f6885a0d0db1d3c2255e4f",
+      "gitBlobSha256": "3d2d4d6c467643c4c0d2bda86b2f1fefd9768e7636f6885a0d0db1d3c2255e4f"
+    },
+    {
+      "path": "sdk/sp2model/_services/reference_calibration.py",
+      "sha256": "541fbee1656e0d4b8ac8638cb3addfce2f10a978654e2189d604fb7fe16dcb9b",
+      "gitBlobSha256": "541fbee1656e0d4b8ac8638cb3addfce2f10a978654e2189d604fb7fe16dcb9b"
+    },
+    {
+      "path": "sdk/sp2model/_services/reference_cli.py",
+      "sha256": "49ee9abf81fd30d330cd2182d661b7c54c03fef4d4c672a69d2cb121a7cfaf4e",
+      "gitBlobSha256": "49ee9abf81fd30d330cd2182d661b7c54c03fef4d4c672a69d2cb121a7cfaf4e"
+    },
+    {
+      "path": "sdk/sp2model/_services/reference_compare.py",
+      "sha256": "c3355fa5434ff3d15e97b6755509cf5fd486e9c5d3c81562fed581038634945c",
+      "gitBlobSha256": "c3355fa5434ff3d15e97b6755509cf5fd486e9c5d3c81562fed581038634945c"
+    },
+    {
+      "path": "sdk/sp2model/_services/reference_project.py",
+      "sha256": "e78a954411a393f1d30b32fa0dabffe02fb087a2b39c6fb5e0521a2ae2cacd0a",
+      "gitBlobSha256": "e78a954411a393f1d30b32fa0dabffe02fb087a2b39c6fb5e0521a2ae2cacd0a"
+    },
+    {
+      "path": "sdk/sp2model/_services/reference_render.py",
+      "sha256": "8ccfbdd6860fa34c12d50f4737554078d4be036a98ca9c7bcbe0f3d3f71ffddb",
+      "gitBlobSha256": "8ccfbdd6860fa34c12d50f4737554078d4be036a98ca9c7bcbe0f3d3f71ffddb"
+    },
+    {
+      "path": "sdk/sp2model/_services/reference_storage.py",
+      "sha256": "27456d8ad2139ab7e8eab748343675fad0ce23076ecabd2d6f7ce51e801ebd38",
+      "gitBlobSha256": "27456d8ad2139ab7e8eab748343675fad0ce23076ecabd2d6f7ce51e801ebd38"
+    },
+    {
+      "path": "sdk/sp2model/_services/reference-worker-requirements.lock",
+      "sha256": "886f66c1081c0d7501200fdb745a20fa0f3b71deb6273e423965adc92ed157f6",
+      "gitBlobSha256": "886f66c1081c0d7501200fdb745a20fa0f3b71deb6273e423965adc92ed157f6"
+    },
+    {
+      "path": "sdk/sp2model/_services/reference-worker-wheels.json",
+      "sha256": "12e05f3865756b02ee1bb528aeb0d49ea5272aeb068e6baef72b5420be463b37",
+      "gitBlobSha256": "12e05f3865756b02ee1bb528aeb0d49ea5272aeb068e6baef72b5420be463b37"
+    },
+    {
+      "path": "sdk/sp2model/_services/regional_geometry.py",
+      "sha256": "c2454464f267125d9e392682448aeb3be9fd9d8e0b57abb27f7655f970dc6c4c",
+      "gitBlobSha256": "c2454464f267125d9e392682448aeb3be9fd9d8e0b57abb27f7655f970dc6c4c"
+    },
+    {
+      "path": "sdk/sp2model/_services/registration.py",
+      "sha256": "1b94d07dd84fd0b366aadd6ae57f03f84e4e78d87e9634c2d9730d91003c7c07",
+      "gitBlobSha256": "1b94d07dd84fd0b366aadd6ae57f03f84e4e78d87e9634c2d9730d91003c7c07"
+    },
+    {
+      "path": "sdk/sp2model/_services/representation_checks.py",
+      "sha256": "bc39dc05fcc0a45d730c61e6453d437ee070fc6ce36b951b457e526c4e033ea9",
+      "gitBlobSha256": "bc39dc05fcc0a45d730c61e6453d437ee070fc6ce36b951b457e526c4e033ea9"
+    },
+    {
+      "path": "sdk/sp2model/_services/review_cameras.py",
+      "sha256": "01c9a3c71e88187dfe8a7ed00e9bb9a8f81b494f707a98cfc4bf7bbd51c896aa",
+      "gitBlobSha256": "01c9a3c71e88187dfe8a7ed00e9bb9a8f81b494f707a98cfc4bf7bbd51c896aa"
+    },
+    {
+      "path": "sdk/sp2model/_services/run_journal.py",
+      "sha256": "8bdeee662d47a8085ee8881f777cf05fa730aefc60210ee7cc163aabbc651f7e",
+      "gitBlobSha256": "8bdeee662d47a8085ee8881f777cf05fa730aefc60210ee7cc163aabbc651f7e"
+    },
+    {
+      "path": "sdk/sp2model/_services/shape_contracts.py",
+      "sha256": "e419ba5447c2ed1a60a8d87acae6878161a55f886256cbe3479787f98e298017",
+      "gitBlobSha256": "e419ba5447c2ed1a60a8d87acae6878161a55f886256cbe3479787f98e298017"
+    },
+    {
+      "path": "sdk/sp2model/_services/structure_model.py",
+      "sha256": "bdc3649739a93afefc9d488f1af50ecbbf97e672a54785b593aa10f59163cc48",
+      "gitBlobSha256": "bdc3649739a93afefc9d488f1af50ecbbf97e672a54785b593aa10f59163cc48"
+    },
+    {
+      "path": "sdk/sp2model/_services/structure_plan.py",
+      "sha256": "5826a9ed841528f5b5a4f8c9cb304bea0106792dd0d23e21b8b9e47f11de1dd3",
+      "gitBlobSha256": "5826a9ed841528f5b5a4f8c9cb304bea0106792dd0d23e21b8b9e47f11de1dd3"
+    },
+    {
+      "path": "sdk/sp2model/_services/structure_runner.py",
+      "sha256": "56bbd53eeb115857046b1fb983388c0aeee6ed06003f4822d98e61702984d216",
+      "gitBlobSha256": "56bbd53eeb115857046b1fb983388c0aeee6ed06003f4822d98e61702984d216"
+    },
+    {
+      "path": "sdk/sp2model/_services/visual.py",
+      "sha256": "8bc444d1da99a0c4634f9ef9b38755373cb270d84b8e65164b2d5a7313932c6e",
+      "gitBlobSha256": "8bc444d1da99a0c4634f9ef9b38755373cb270d84b8e65164b2d5a7313932c6e"
+    },
+    {
+      "path": "sdk/sp2model/_services/reference_providers/__init__.py",
+      "sha256": "21919b8b62bf2f47ec0cad6f060ca19b4643782d5c828249e29fef483abf9774",
+      "gitBlobSha256": "21919b8b62bf2f47ec0cad6f060ca19b4643782d5c828249e29fef483abf9774"
+    },
+    {
+      "path": "sdk/sp2model/_services/reference_providers/blender_exchange.py",
+      "sha256": "f6e54a427f8ab4b9d7206b30a895c8a2f1f45a1feb460ea655669b2397778acd",
+      "gitBlobSha256": "f6e54a427f8ab4b9d7206b30a895c8a2f1f45a1feb460ea655669b2397778acd"
+    },
+    {
+      "path": "sdk/sp2model/_services/reference_providers/common.py",
+      "sha256": "2b71febb3fa55d48ec161f91ef065073dd50c3b5ed7409ff4ed34fbd0f4c80c6",
+      "gitBlobSha256": "2b71febb3fa55d48ec161f91ef065073dd50c3b5ed7409ff4ed34fbd0f4c80c6"
+    },
+    {
+      "path": "sdk/sp2model/_services/reference_providers/images.py",
+      "sha256": "5d0132f12ebc79ad5cb6616b4b4f731d750263b36a41c2fe6fd3336c57add39e",
+      "gitBlobSha256": "5d0132f12ebc79ad5cb6616b4b4f731d750263b36a41c2fe6fd3336c57add39e"
+    },
+    {
+      "path": "sdk/sp2model/_services/reference_providers/mesh_file.py",
+      "sha256": "5b7ec5db1e75a478fbef6ae704386a0356b32f26c31ff5263a1e7b3d94939234",
+      "gitBlobSha256": "5b7ec5db1e75a478fbef6ae704386a0356b32f26c31ff5263a1e7b3d94939234"
+    },
+    {
+      "path": "sdk/sp2model/_services/reference_worker/__init__.py",
+      "sha256": "e3b0c44298fc1c149afbf4c8996fb92427ae41e4649b934ca495991b7852b855",
+      "gitBlobSha256": "e3b0c44298fc1c149afbf4c8996fb92427ae41e4649b934ca495991b7852b855"
+    },
+    {
+      "path": "sdk/sp2model/_services/reference_worker/main.py",
+      "sha256": "5daba863db735cd5c55e0303bf573347b69fc80d51b7b0cfb697f7959958e23e",
+      "gitBlobSha256": "5daba863db735cd5c55e0303bf573347b69fc80d51b7b0cfb697f7959958e23e"
+    },
+    {
+      "path": "bridge/AcceptanceCameraFixture.cs",
+      "sha256": "165ce91b338162bbaa7a7b27a3c8ade8c7b31bec548739503e12ea099f778aa8",
+      "gitBlobSha256": "165ce91b338162bbaa7a7b27a3c8ade8c7b31bec548739503e12ea099f778aa8"
+    },
+    {
+      "path": "bridge/AcceptanceFaults.cs",
+      "sha256": "64ea3da42c8df23256a10c338d8caab00a7dc8db302d389cabfba6e649716480",
+      "gitBlobSha256": "64ea3da42c8df23256a10c338d8caab00a7dc8db302d389cabfba6e649716480"
+    },
+    {
+      "path": "bridge/AcceptanceMemoryInventory.cs",
+      "sha256": "80e5c704a5771541761bb49c1a22269e9468a726451390a87ddd897ab6a9307d",
+      "gitBlobSha256": "80e5c704a5771541761bb49c1a22269e9468a726451390a87ddd897ab6a9307d"
+    },
+    {
+      "path": "bridge/AcceptanceNative.cs",
+      "sha256": "167f0e2e463537efeb2013e59b528a5eeb3c80c69d06d3ffd192c7cc5581a2fa",
+      "gitBlobSha256": "167f0e2e463537efeb2013e59b528a5eeb3c80c69d06d3ffd192c7cc5581a2fa"
+    },
+    {
+      "path": "bridge/AcceptanceOverload.cs",
+      "sha256": "6046eb0ad127b25377101ddb60190b1b55e09de2091571f6b6a8c5478a0ffd1e",
+      "gitBlobSha256": "6046eb0ad127b25377101ddb60190b1b55e09de2091571f6b6a8c5478a0ffd1e"
+    },
+    {
+      "path": "bridge/AdvancedEditing.cs",
+      "sha256": "c0a6dd0d8c32ac98a0b6ff718a98cc07487d435bd1f93f225c8003b8a0d3c896",
+      "gitBlobSha256": "c0a6dd0d8c32ac98a0b6ff718a98cc07487d435bd1f93f225c8003b8a0d3c896"
+    },
+    {
+      "path": "bridge/AppearanceProperties.cs",
+      "sha256": "c46f671d9a46e8ed2a227148864251af12ccc55be903975cca11634ea5d818a6",
+      "gitBlobSha256": "c46f671d9a46e8ed2a227148864251af12ccc55be903975cca11634ea5d818a6"
+    },
+    {
+      "path": "bridge/AssemblyEditing.cs",
+      "sha256": "6e56b05d8d98a41dba59badd51b3b471e589963cbebca32afe3c7cbb2620f45f",
+      "gitBlobSha256": "6e56b05d8d98a41dba59badd51b3b471e589963cbebca32afe3c7cbb2620f45f"
+    },
+    {
+      "path": "bridge/AssemblyScope.cs",
+      "sha256": "7b0b55334a00e12b83e1fcd4081ad6a1af7e9027e3b30d9e638486b4b05a9eed",
+      "gitBlobSha256": "7b0b55334a00e12b83e1fcd4081ad6a1af7e9027e3b30d9e638486b4b05a9eed"
+    },
+    {
+      "path": "bridge/BatchReferences.cs",
+      "sha256": "c686964340cfd0ee142570d5071aa2f6a50b4eb7f0bb9c4a567b698cf9c501ce",
+      "gitBlobSha256": "c686964340cfd0ee142570d5071aa2f6a50b4eb7f0bb9c4a567b698cf9c501ce"
+    },
+    {
+      "path": "bridge/BuildRuntime.cs",
+      "sha256": "0b7cdc9ea1c22df8d3dad6da459f6d42929a3149106b482f104c829197044a32",
+      "gitBlobSha256": "bff8fbc3abc25aa5a138ea19dda5b5c15d9e1fe52c563e3e47cf0a3c11467358"
+    },
+    {
+      "path": "bridge/CameraState.cs",
+      "sha256": "e2cc4cc5e090cd5f144cf341eef5dca2363306d752b6a6d7a81de3fe96bed531",
+      "gitBlobSha256": "e2cc4cc5e090cd5f144cf341eef5dca2363306d752b6a6d7a81de3fe96bed531"
+    },
+    {
+      "path": "bridge/CarverRefresh.cs",
+      "sha256": "2f858ded2f38cb1046b7c27e8ab88b46f26487a495e9cc6e0113e2fc653103d5",
+      "gitBlobSha256": "2f858ded2f38cb1046b7c27e8ab88b46f26487a495e9cc6e0113e2fc653103d5"
+    },
+    {
+      "path": "bridge/CentersCore.cs",
+      "sha256": "bd9b16e5683a03b264401f66ebff81e270375a6b215f81adccba5cf0147789be",
+      "gitBlobSha256": "bd9b16e5683a03b264401f66ebff81e270375a6b215f81adccba5cf0147789be"
+    },
+    {
+      "path": "bridge/CentersOverlay.cs",
+      "sha256": "5ef893da5c432fc473781004d61ba0c5ecd360e7c4f0ede6f8808ca48dbb2325",
+      "gitBlobSha256": "5ef893da5c432fc473781004d61ba0c5ecd360e7c4f0ede6f8808ca48dbb2325"
+    },
+    {
+      "path": "bridge/CraftDiff.cs",
+      "sha256": "ae5c18f84ad0d857f55c13bb344fe51a2d566d100dd8be5feabd70791a1e82d5",
+      "gitBlobSha256": "ae5c18f84ad0d857f55c13bb344fe51a2d566d100dd8be5feabd70791a1e82d5"
+    },
+    {
+      "path": "bridge/CraftSaveTarget.cs",
+      "sha256": "1b1d8419ecee9741a2779cd42cc2f072349030cadb4691401a889facec9c3754",
+      "gitBlobSha256": "1b1d8419ecee9741a2779cd42cc2f072349030cadb4691401a889facec9c3754"
+    },
+    {
+      "path": "bridge/DesignerCapture.cs",
+      "sha256": "4fc04f9458529e42c478ddceb1a01d6d4f7ee0201016fba0822a41addefb34a8",
+      "gitBlobSha256": "4fc04f9458529e42c478ddceb1a01d6d4f7ee0201016fba0822a41addefb34a8"
+    },
+    {
+      "path": "bridge/DesignerCenters.cs",
+      "sha256": "32d6103ae9597a61a03e582a3b52ab38577a152fdb432b59bb6e131151189939",
+      "gitBlobSha256": "32d6103ae9597a61a03e582a3b52ab38577a152fdb432b59bb6e131151189939"
+    },
+    {
+      "path": "bridge/DesignerControl.cs",
+      "sha256": "1224cf2f5cea1014ad6109374ab2510da4f1c5c985949d3a8ed4d6471ca5ce6c",
+      "gitBlobSha256": "1224cf2f5cea1014ad6109374ab2510da4f1c5c985949d3a8ed4d6471ca5ce6c"
+    },
+    {
+      "path": "bridge/DesignerExpressionLifetime.cs",
+      "sha256": "c215f2673df7e005044de08162d8f7dbaf59c0163f526be0ab6cc1b92c10bc1a",
+      "gitBlobSha256": "c215f2673df7e005044de08162d8f7dbaf59c0163f526be0ab6cc1b92c10bc1a"
+    },
+    {
+      "path": "bridge/DesignerGeometry.cs",
+      "sha256": "8482a668111dea2ffdef593362e96fe82923c31d54c0813e492d67710ad68243",
+      "gitBlobSha256": "8482a668111dea2ffdef593362e96fe82923c31d54c0813e492d67710ad68243"
+    },
+    {
+      "path": "bridge/DesignerModeState.cs",
+      "sha256": "7ff3d255ca1643184ada847b0606a782121397440ffce574ff855a5d9136c6e7",
+      "gitBlobSha256": "7ff3d255ca1643184ada847b0606a782121397440ffce574ff855a5d9136c6e7"
+    },
+    {
+      "path": "bridge/DesignerScene.cs",
+      "sha256": "b733c8f39890c877501652bdd8f50882d545cee5a8b9579675dea17ec481bda6",
+      "gitBlobSha256": "b733c8f39890c877501652bdd8f50882d545cee5a8b9579675dea17ec481bda6"
+    },
+    {
+      "path": "bridge/DesignerViewPlan.cs",
+      "sha256": "ba7c68e0fe77b0a3feb3d19355d5927248de87bd688e18b4758a40db268e6beb",
+      "gitBlobSha256": "ba7c68e0fe77b0a3feb3d19355d5927248de87bd688e18b4758a40db268e6beb"
+    },
+    {
+      "path": "bridge/DriveShaftPrecision.cs",
+      "sha256": "8e7edd195319577d110e0b55b2fea0c7cb34e196ac8b93e159a66166916c8227",
+      "gitBlobSha256": "8e7edd195319577d110e0b55b2fea0c7cb34e196ac8b93e159a66166916c8227"
+    },
+    {
+      "path": "bridge/EditPlan.cs",
+      "sha256": "9d325a149f4710a67eceeaf7770c47cf34241865ff6fe8c518926eac661e2ef6",
+      "gitBlobSha256": "9d325a149f4710a67eceeaf7770c47cf34241865ff6fe8c518926eac661e2ef6"
+    },
+    {
+      "path": "bridge/ExpressionTemplates.cs",
+      "sha256": "00f95a1e5a45761bcdf619b18cca211ba4d62eb23796d9f8bba0ab2feb7f067b",
+      "gitBlobSha256": "00f95a1e5a45761bcdf619b18cca211ba4d62eb23796d9f8bba0ab2feb7f067b"
+    },
+    {
+      "path": "bridge/ForegroundInputGuard.cs",
+      "sha256": "8fdcc015270e81ff208ac1a28ee9fe1225a0c151667a8342a2dd32107857db5e",
+      "gitBlobSha256": "8fdcc015270e81ff208ac1a28ee9fe1225a0c151667a8342a2dd32107857db5e"
+    },
+    {
+      "path": "bridge/GeometryMeasure.cs",
+      "sha256": "b020026e599db7da7e948785081681a57ba1001a6a54ecc11fd2b2b52b7b7d88",
+      "gitBlobSha256": "b020026e599db7da7e948785081681a57ba1001a6a54ecc11fd2b2b52b7b7d88"
+    },
+    {
+      "path": "bridge/GeometryQueries.cs",
+      "sha256": "bc6f123573f3d5e98d4d1e3a58a2f01946d961d228e912121fe3711697cd175b",
+      "gitBlobSha256": "bc6f123573f3d5e98d4d1e3a58a2f01946d961d228e912121fe3711697cd175b"
+    },
+    {
+      "path": "bridge/GraphicsReadback.cs",
+      "sha256": "e3493c3f0451765aa1a3e094f7dd3ab3dc7b078e840465189529229de9994a08",
+      "gitBlobSha256": "e3493c3f0451765aa1a3e094f7dd3ab3dc7b078e840465189529229de9994a08"
+    },
+    {
+      "path": "bridge/InputControllerFields.cs",
+      "sha256": "340fbd46f998e51dad75a30bc4d138768e4718cc0ede8fea5e2fa1031784c9a7",
+      "gitBlobSha256": "340fbd46f998e51dad75a30bc4d138768e4718cc0ede8fea5e2fa1031784c9a7"
+    },
+    {
+      "path": "bridge/InputJson.cs",
+      "sha256": "5e8dd0e1ffc41347897550bb2bc44bae056ad2d81f5c19926f035de18c5cde6b",
+      "gitBlobSha256": "5e8dd0e1ffc41347897550bb2bc44bae056ad2d81f5c19926f035de18c5cde6b"
+    },
+    {
+      "path": "bridge/InteractiveScheduling.cs",
+      "sha256": "0208886ad22aafb1eb9efc7553569668bc542d88d939b973ddb3d207d77fb895",
+      "gitBlobSha256": "0208886ad22aafb1eb9efc7553569668bc542d88d939b973ddb3d207d77fb895"
+    },
+    {
+      "path": "bridge/JobDiagnostics.cs",
+      "sha256": "68347d3e0e6d9b8dc34edc09e72ab88134dfcd336fb76b98c6b4b5d9ab3e21be",
+      "gitBlobSha256": "68347d3e0e6d9b8dc34edc09e72ab88134dfcd336fb76b98c6b4b5d9ab3e21be"
+    },
+    {
+      "path": "bridge/LogicDependencies.cs",
+      "sha256": "4ffac30431f90c44209f245ec0b83058ab62ed8f49100df3b2b95a952e52fea1",
+      "gitBlobSha256": "4ffac30431f90c44209f245ec0b83058ab62ed8f49100df3b2b95a952e52fea1"
+    },
+    {
+      "path": "bridge/MechanicalEditing.cs",
+      "sha256": "b716e9be8d942f9700ca9ebbecf804ac274d14177304378ad1b65dc6f1c591aa",
+      "gitBlobSha256": "b716e9be8d942f9700ca9ebbecf804ac274d14177304378ad1b65dc6f1c591aa"
+    },
+    {
+      "path": "bridge/MeshSnapshot.cs",
+      "sha256": "6d9765f0a72a1dc42783dbc6216da330d1051a0223386e26dc0c801ccc0cdbc9",
+      "gitBlobSha256": "6d9765f0a72a1dc42783dbc6216da330d1051a0223386e26dc0c801ccc0cdbc9"
+    },
+    {
+      "path": "bridge/ModelBindingContent.cs",
+      "sha256": "a90f70d53a29892350756ebe786b28da33edf06c71b85163740ea4e2f7f2bb1e",
+      "gitBlobSha256": "a90f70d53a29892350756ebe786b28da33edf06c71b85163740ea4e2f7f2bb1e"
+    },
+    {
+      "path": "bridge/ModelMirroring.cs",
+      "sha256": "3556098b85ff43c632e9a1a0e447d4edd8fbb6cf9e3a80abd0301858dfa1bdd2",
+      "gitBlobSha256": "3556098b85ff43c632e9a1a0e447d4edd8fbb6cf9e3a80abd0301858dfa1bdd2"
+    },
+    {
+      "path": "bridge/ModelOperations.cs",
+      "sha256": "b0bd9470ed40aeeb40ca90d0eaa9473f9fd2b1fd776f4d50234bb7963a3f3c05",
+      "gitBlobSha256": "b0bd9470ed40aeeb40ca90d0eaa9473f9fd2b1fd776f4d50234bb7963a3f3c05"
+    },
+    {
+      "path": "bridge/ModelRead.cs",
+      "sha256": "903a43979e1933e876733a84795fd302a7440f00edb912e08e8bbf0bc0d7a3fc",
+      "gitBlobSha256": "730d1a7ce32cf5fc55e3e9b6d2bb12f1e00e22b424d3e80a82193e4058a8c1b0"
+    },
+    {
+      "path": "bridge/ModelRecovery.cs",
+      "sha256": "3cc5eb907602234bef49047dae98474997e1819516414f09c1e79e259d40c01a",
+      "gitBlobSha256": "3cc5eb907602234bef49047dae98474997e1819516414f09c1e79e259d40c01a"
+    },
+    {
+      "path": "bridge/ModelScope.cs",
+      "sha256": "8e1b27eaa4d02000b1bc8c322ff379323ef773aff83bfa7204a53af709c2ddba",
+      "gitBlobSha256": "8e1b27eaa4d02000b1bc8c322ff379323ef773aff83bfa7204a53af709c2ddba"
+    },
+    {
+      "path": "bridge/NativeInputSafety.cs",
+      "sha256": "20d8d1561e443750b6f1269b212f644741af25aee71cf8f640f9f38e1ff31d94",
+      "gitBlobSha256": "20d8d1561e443750b6f1269b212f644741af25aee71cf8f640f9f38e1ff31d94"
+    },
+    {
+      "path": "bridge/NativeMeshLifetime.cs",
+      "sha256": "380dce13a83343091981c2a975d3849dbd0ff4822009d48fbff22f0f45807195",
+      "gitBlobSha256": "380dce13a83343091981c2a975d3849dbd0ff4822009d48fbff22f0f45807195"
+    },
+    {
+      "path": "bridge/NativeModifierState.cs",
+      "sha256": "3c97a9af44a6444cd8119409bcbeab6da61aaddbc52fcf9f7c97517ff888395a",
+      "gitBlobSha256": "3c97a9af44a6444cd8119409bcbeab6da61aaddbc52fcf9f7c97517ff888395a"
+    },
+    {
+      "path": "bridge/NativePropertyAdapter.cs",
+      "sha256": "dd7570784807fa82fc22605d03b864f363c5c952d883ddfc8cb134e9e87a9c6c",
+      "gitBlobSha256": "dd7570784807fa82fc22605d03b864f363c5c952d883ddfc8cb134e9e87a9c6c"
+    },
+    {
+      "path": "bridge/NativeRestoreCachePlan.cs",
+      "sha256": "83ec314879fd4cfb59861337d030daf5fc86c5d034de014964a75bf37b79291e",
+      "gitBlobSha256": "83ec314879fd4cfb59861337d030daf5fc86c5d034de014964a75bf37b79291e"
+    },
+    {
+      "path": "bridge/NativeRestoreCaches.cs",
+      "sha256": "3c094bdb6bacc53824b9e1ba94e3706eee31fad230055580b4fa0d4a599fcd57",
+      "gitBlobSha256": "3c094bdb6bacc53824b9e1ba94e3706eee31fad230055580b4fa0d4a599fcd57"
+    },
+    {
+      "path": "bridge/NativeSaveReceipt.cs",
+      "sha256": "ff58d0c2eec6ef28efea5928ec8814e14b1a0bdd2b438cc72fd3c2993cd617e1",
+      "gitBlobSha256": "ff58d0c2eec6ef28efea5928ec8814e14b1a0bdd2b438cc72fd3c2993cd617e1"
+    },
+    {
+      "path": "bridge/NativeStateEditing.cs",
+      "sha256": "1f39c5ed4e19cbda3ec49b6b53914e026d97030dd7d10248f6db5d5a57ae0be3",
+      "gitBlobSha256": "1f39c5ed4e19cbda3ec49b6b53914e026d97030dd7d10248f6db5d5a57ae0be3"
+    },
+    {
+      "path": "bridge/NativeUndoSession.cs",
+      "sha256": "0fd042b6e40845f808cad8c02d5a455ec6a3261990effc29ce28a0245cb8ae1b",
+      "gitBlobSha256": "0fd042b6e40845f808cad8c02d5a455ec6a3261990effc29ce28a0245cb8ae1b"
+    },
+    {
+      "path": "bridge/OperationResults.cs",
+      "sha256": "6325d65f62714a76370876c8f3832b10e99eb86b6d423a48a5505a95b167bff5",
+      "gitBlobSha256": "6325d65f62714a76370876c8f3832b10e99eb86b6d423a48a5505a95b167bff5"
+    },
+    {
+      "path": "bridge/PoseRetention.cs",
+      "sha256": "8e1f45998b4a5cc2f3e6b1c408c7ddddaa897ecba5244b3f81ac04cf93809e75",
+      "gitBlobSha256": "8e1f45998b4a5cc2f3e6b1c408c7ddddaa897ecba5244b3f81ac04cf93809e75"
+    },
+    {
+      "path": "bridge/PropertyDescriptors.cs",
+      "sha256": "cba948e6da089924f376c960575cd264415e47f9e0a22a856adfd8ac0cc0367d",
+      "gitBlobSha256": "cba948e6da089924f376c960575cd264415e47f9e0a22a856adfd8ac0cc0367d"
+    },
+    {
+      "path": "bridge/PropertyEditing.cs",
+      "sha256": "143f96bae73ef3ec79ca4c8da4c8e0237a0b374713de7ec5ba98a271e184e60b",
+      "gitBlobSha256": "143f96bae73ef3ec79ca4c8da4c8e0237a0b374713de7ec5ba98a271e184e60b"
+    },
+    {
+      "path": "bridge/PropertyRegistry.cs",
+      "sha256": "39f690aa4b382723eb47104b2727824d788c38e0efa607ed75fb03b6ab4f471b",
+      "gitBlobSha256": "39f690aa4b382723eb47104b2727824d788c38e0efa607ed75fb03b6ab4f471b"
+    },
+    {
+      "path": "bridge/ReadModels.cs",
+      "sha256": "55fa704f25e58657141f1c962d1d2283094f21fe4a23f271097aadab49be4421",
+      "gitBlobSha256": "55fa704f25e58657141f1c962d1d2283094f21fe4a23f271097aadab49be4421"
+    },
+    {
+      "path": "bridge/RecoveryLeases.cs",
+      "sha256": "0e2e6401b25dd762ade1f34608821fabf178f927eab354778ddd51355634d12b",
+      "gitBlobSha256": "0e2e6401b25dd762ade1f34608821fabf178f927eab354778ddd51355634d12b"
+    },
+    {
+      "path": "bridge/RenderAttributes.cs",
+      "sha256": "a0ecc8e3be0abaa1d07183f437eb858e96e4d636516df3e40322a99dab32f48b",
+      "gitBlobSha256": "a0ecc8e3be0abaa1d07183f437eb858e96e4d636516df3e40322a99dab32f48b"
+    },
+    {
+      "path": "bridge/ReplacementLifetime.cs",
+      "sha256": "dcd83f582311141ed24438944acf10df31ee4e65b704ae36e5cc388173e3782b",
+      "gitBlobSha256": "dcd83f582311141ed24438944acf10df31ee4e65b704ae36e5cc388173e3782b"
+    },
+    {
+      "path": "bridge/ScopedScheduling.cs",
+      "sha256": "a286718b61996e4cbbdd38302e7b38bacea36578c2a3b33f263da12420567949",
+      "gitBlobSha256": "a286718b61996e4cbbdd38302e7b38bacea36578c2a3b33f263da12420567949"
+    },
+    {
+      "path": "bridge/ScopeState.cs",
+      "sha256": "621a1a30819dfb096ce66c43b8b133045cae023dff378feb9368df929a6de090",
+      "gitBlobSha256": "621a1a30819dfb096ce66c43b8b133045cae023dff378feb9368df929a6de090"
+    },
+    {
+      "path": "bridge/SectionMeasure.cs",
+      "sha256": "8e851c5e6155d9964fb68bddf917bfdac3187d2cc80bff0fe86c751e5412ee82",
+      "gitBlobSha256": "8e851c5e6155d9964fb68bddf917bfdac3187d2cc80bff0fe86c751e5412ee82"
+    },
+    {
+      "path": "bridge/ShapeCodec.cs",
+      "sha256": "36398acbc99dfce0328c501fdcbec9a2b0ccfff441a58b4939b4678d37b0fea5",
+      "gitBlobSha256": "36398acbc99dfce0328c501fdcbec9a2b0ccfff441a58b4939b4678d37b0fea5"
+    },
+    {
+      "path": "bridge/SnapshotState.cs",
+      "sha256": "92f5154f4f9ef2766a50525e4e0265b5236c72bdb5aae6b1bae7f617548075c9",
+      "gitBlobSha256": "92f5154f4f9ef2766a50525e4e0265b5236c72bdb5aae6b1bae7f617548075c9"
+    },
+    {
+      "path": "bridge/TransformEditing.cs",
+      "sha256": "e8eacc7940ff169c7d3eeb71e928047549b0240df657c223480083f96eee67d2",
+      "gitBlobSha256": "e8eacc7940ff169c7d3eeb71e928047549b0240df657c223480083f96eee67d2"
+    },
+    {
+      "path": "bridge/Transport.cs",
+      "sha256": "34dc84d50af9a51d24fc09ed67c919ede706bd69483a54cc42f1020597104c41",
+      "gitBlobSha256": "32b664f74f3c91f0d8c4b7f39d75203fee2eda1539b99fda0aa39e29b48eedc6"
+    },
+    {
+      "path": "bridge/VisualCapture.cs",
+      "sha256": "82613255fccd1379e695e431c173b1e45ac00be6d6a733ce6b366ed2b2e03ea0",
+      "gitBlobSha256": "82613255fccd1379e695e431c173b1e45ac00be6d6a733ce6b366ed2b2e03ea0"
+    },
+    {
+      "path": "bridge/VisualCore.cs",
+      "sha256": "c689e7487fbfcf26ac84ef8d2ff5e3e6fc37ed9a7f3bb4a70e5b58ae32fd9ec7",
+      "gitBlobSha256": "c689e7487fbfcf26ac84ef8d2ff5e3e6fc37ed9a7f3bb4a70e5b58ae32fd9ec7"
+    },
+    {
+      "path": "bridge/VisualScope.cs",
+      "sha256": "846c0fd9a54ff592aa970de2869f39b6371956c9bc62175ab85f47f4c294fe35",
+      "gitBlobSha256": "846c0fd9a54ff592aa970de2869f39b6371956c9bc62175ab85f47f4c294fe35"
+    },
+    {
+      "path": "bridge/WingModeling.cs",
+      "sha256": "7f35acb74416d122e6f3185585e77821313011609c345c57498cbfbe796ea82a",
+      "gitBlobSha256": "7f35acb74416d122e6f3185585e77821313011609c345c57498cbfbe796ea82a"
+    },
+    {
+      "path": "sdk/pyproject.toml",
+      "sha256": "b3d41dc55024b29c16d4d0583c3cd5fb5ad44ba05fe1bd5095f1fdb6e4c93a64",
+      "gitBlobSha256": "b4f3f872ff73b0f969ed3b610af0b0c7ac260b1a51fd37c43973ffa7150c6449"
+    },
+    {
+      "path": "build.ps1",
+      "sha256": "c9e812538b8667a474a4caa641582745dc044ab3298ed09e5ee27cad8a44e20a",
+      "gitBlobSha256": "427c146ea92555541c138152393b37377591a5f29ca3582968bfb6fdc6bb16d5"
+    },
+    {
+      "path": "build-agent-sdk.ps1",
+      "sha256": "7389eddb4506f0220b2c1309723277a96a947ba1245e30df47f1c3bf4c09fd93",
+      "gitBlobSha256": "1a3223b52a8b657cf3ad0a8fdb18d3a763ff401f103c4be4c9becb7b07c7e07b"
+    },
+    {
+      "path": "cli/sp2build.py",
+      "sha256": "20fe52d0804c3fe40ecd910cae71d42ffea9784cc93c5539c415f17d62af6ee0",
+      "gitBlobSha256": "07e4bce0fb6ebbb481ace032edf6ccb4fd84d47f1552c297ffbdf2e93ea8d6e5"
+    },
+    {
+      "path": "cli/shape_contracts.py",
+      "sha256": "5e05b662a65c5342b9623466e9ad6e0e8e8052aee6d0f6cc629d2051eb70b81b",
+      "gitBlobSha256": "5e05b662a65c5342b9623466e9ad6e0e8e8052aee6d0f6cc629d2051eb70b81b"
+    },
+    {
+      "path": "cli/precision_contracts.py",
+      "sha256": "dfb9f733badcb3718c2a3b23bf76efd1e44c92e98b5e5c8fff316c03cb5da371",
+      "gitBlobSha256": "dfb9f733badcb3718c2a3b23bf76efd1e44c92e98b5e5c8fff316c03cb5da371"
+    },
+    {
+      "path": "cli/modeling_contracts.py",
+      "sha256": "2e3e4f765cc2ea8b6e751969bc1db7c49491766e2dbdebb0f9f5c78bb474f5c3",
+      "gitBlobSha256": "2e3e4f765cc2ea8b6e751969bc1db7c49491766e2dbdebb0f9f5c78bb474f5c3"
+    },
+    {
+      "path": "cli/build_review_cli.py",
+      "sha256": "64300c7b09c677bc075074f20a3a8c81d440d46dfbb0d09f66d4d163be09c556",
+      "gitBlobSha256": "64300c7b09c677bc075074f20a3a8c81d440d46dfbb0d09f66d4d163be09c556"
+    },
+    {
+      "path": "cli/build_loop.py",
+      "sha256": "a124f9fc457f00f101206348dcca2e55d5f1ac6593b6e2e2b95753c4257df19e",
+      "gitBlobSha256": "a124f9fc457f00f101206348dcca2e55d5f1ac6593b6e2e2b95753c4257df19e"
+    },
+    {
+      "path": "cli/contracts.py",
+      "sha256": "c7c5eadbee90e3f5aab8fee8247df7cba90c5ebdf0af23cfb8b0e06958e9138e",
+      "gitBlobSha256": "c7c5eadbee90e3f5aab8fee8247df7cba90c5ebdf0af23cfb8b0e06958e9138e"
+    },
+    {
+      "path": "tools/build_parts_knowledge_077.py",
+      "sha256": "59ccbb17386dfa6ff605c88f23b07b94edb6b342a32e39162f23f0ad65fae11c",
+      "gitBlobSha256": "59ccbb17386dfa6ff605c88f23b07b94edb6b342a32e39162f23f0ad65fae11c"
+    },
+    {
+      "path": "tools/build_funky_knowledge_077.py",
+      "sha256": "88b0a53bd2d6df8378f1d17b79ede049cd5631c94db56f4f66f4d0f9e0dd7ad8",
+      "gitBlobSha256": "88b0a53bd2d6df8378f1d17b79ede049cd5631c94db56f4f66f4d0f9e0dd7ad8"
+    },
+    {
+      "path": "deployment/stage_knowledge_077.py",
+      "sha256": "8c1d256a376045a936d70b55ac15535ab9caec56ba53ce5a262cad77f66aeb27",
+      "gitBlobSha256": "8c1d256a376045a936d70b55ac15535ab9caec56ba53ce5a262cad77f66aeb27"
+    },
+    {
+      "path": "deployment/stage_resources_073.py",
+      "sha256": "07a985b4baff331dcf688051e08db0fd3ac05cbd45476551fbc2c32901156507",
+      "gitBlobSha256": "9f496b6734a8079df54ad16d118e99d4512f39f9a9b5bce1400f14ea0ccc252c"
+    },
+    {
+      "path": "deployment/install_073.py",
+      "sha256": "b4d79c9f293ee7c9a7427a01003f3b4f430e6a67a95c86695edda8c4a9b944eb",
+      "gitBlobSha256": "59987564ad11c19ad80a11c6bed7f030ff3c690fb9de18ab6be16cbd0d9de310"
+    },
+    {
+      "path": "deployment/verify_sdk_install.py",
+      "sha256": "db48214b3d522f0fddd163db71f2ffba7d9d0de892eb5aa23d48b45cf9b6975f",
+      "gitBlobSha256": "f9963b7e595ae85c8954c4c80489cddff39c975857da16b560f7e1e8c6edeb55"
+    },
+    {
+      "path": "deployment/skills/sp2-build-assistant/SKILL.md",
+      "sha256": "328c5c1f47fa312bc8875a3834fdba9ea1e965933a1bcc13ddfb4ed3097813d9",
+      "gitBlobSha256": "328c5c1f47fa312bc8875a3834fdba9ea1e965933a1bcc13ddfb4ed3097813d9"
+    },
+    {
+      "path": "knowledge/v077/parts.json",
+      "sha256": "6f30a6680d5d459d07bfa091077bae03c3eea657d98a1a36275e230342d77722",
+      "gitBlobSha256": "6f30a6680d5d459d07bfa091077bae03c3eea657d98a1a36275e230342d77722"
+    },
+    {
+      "path": "knowledge/v077/funky.json",
+      "sha256": "d82ac65543ec8cf9e1ab21c0010eedc3fc005801ae20a8784ca3bf1dddd26986",
+      "gitBlobSha256": "d82ac65543ec8cf9e1ab21c0010eedc3fc005801ae20a8784ca3bf1dddd26986"
+    },
+    {
+      "path": "knowledge/v077/manifest.json",
+      "sha256": "e1ae604ca4de28b945db3cfed6265eecc54afdefc103d58fdc95dfa5c561e87d",
+      "gitBlobSha256": "75d4173dcd5af84fed5710e123ea951e8887a6c4f75dd793ab34dfc40c910d73"
+    }
+  ],
+  "pluginSha256": "6587e2fa0ef1aace8c620a8a5622f67b44448a8e6702084ffa47bde7b727d102",
+  "sdkWheelSha256": "e935b5da2b047d7e94fd82a2a9074eb97dd7e7c251491052fe1a4ff7cbb96122",
+  "packagingChanges": [
+    "Portable compiler and game-directory arguments",
+    "User documentation allowlist"
+  ],
+  "packagingSourceOverrides": [
+    {
+      "path": "build.ps1",
+      "validatedInputSha256": "c9e812538b8667a474a4caa641582745dc044ab3298ed09e5ee27cad8a44e20a",
+      "releaseSha256": "ccc5257d9ca5ec6f270ccd11e00f4e766766610f46d2e9530127898ae8f8e8f5"
+    },
+    {
+      "path": "build-agent-sdk.ps1",
+      "validatedInputSha256": "7389eddb4506f0220b2c1309723277a96a947ba1245e30df47f1c3bf4c09fd93",
+      "releaseSha256": "0aa981f163cf02cc30c4ce36068c458771851bcd441106eaab354ddfd92861ca"
+    }
+  ],
+  "sourceLineEndings": "Validated-input hashes describe the original build inputs. gitBlobSha256 describes the tagged source after repository line-ending normalization."
+}

@@ -4,6 +4,8 @@
 
 本页适用于已经取得的 **0.7.8 插件和 0.7.8a1 SDK 完整 ZIP**。包内应有 `manifest.json`、插件 DLL、`sp2model` wheel、`worker-wheelhouse` 和 `deployment/install_073.py`。将插件、SDK、skill 与参考处理组件作为同一版本安装。
 
+从 [v0.7.8 Release](https://github.com/EEEureka/sp2-build-assistant/releases/tag/v0.7.8) 下载 [sp2build-0.7.8.zip](https://github.com/EEEureka/sp2-build-assistant/releases/download/v0.7.8/sp2build-0.7.8.zip) 和 [SHA-256 校验文件](https://github.com/EEEureka/sp2-build-assistant/releases/download/v0.7.8/sp2build-0.7.8.sha256)。
+
 ## 安装到游戏目录
 
 在 Windows x64 上准备与包匹配的 SimplePlanes 2、BepInEx 5（Mono）和 **64 位 Python 3.12**。参考处理组件使用包中为 Python 3.12 提供的离线依赖。安装器会对照清单中的 `Game.dll` 哈希检查游戏版本。

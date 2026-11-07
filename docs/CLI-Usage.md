@@ -2,6 +2,8 @@
 
 English · [简体中文](zh-CN/CLI-Usage.md)
 
+For the latest [v0.7.8 release](https://github.com/EEEureka/sp2-build-assistant/releases/tag/v0.7.8), use the [SDK installation and modeling guide](SDK-0.7.8.md). This reference covers the legacy 0.5.0 CLI.
+
 This reference covers the 0.5.0 command-line package. The agent runs the installed `sp2build` launcher on the same Windows computer as the game. Start with [installation](Installation.md) and [the first agent-assisted task](Quickstart.md).
 
 ## Invocation and discovery

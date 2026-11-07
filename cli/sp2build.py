@@ -14,24 +14,33 @@ import sys
 from urllib.error import HTTPError, URLError
 from urllib.request import ProxyHandler, Request, build_opener
 import uuid
+import reference_cli
 
 def trace_timing(stage, started):
     """Opt-in local diagnostics on stderr; never include discovery tokens or bodies."""
     if os.environ.get("SP2BUILD_TRACE_TIMINGS") == "1":
         print(json.dumps({"stage": stage, "milliseconds": round((time.monotonic()-started)*1000, 3)}), file=sys.stderr)
 
-VERSION = "0.5.0"
+VERSION = "0.7.7a1"
 READS = {
+    "craft.status": {},
+    "native.state":{"id":"integer"}, "mechanical.get":{"id":"integer"},
+    "wing.stations":{"id":"integer","positions":"array"},
+    "airfoils.describe":{"name":"string","reynolds":"number","mach":"number","anglesDegrees":"array"},
+    "model.dependencies":{"craftSessionId":"string","expectedRevision":"integer","partIds":"array"},
+    "logic.dependencies":{"variable":"string"},
+    "parts.query": {"partIds":"array", "name":"string", "type":"string", "fields":"array", "offset":"integer", "limit":"integer", "craftSessionId":"string", "expectedRevision":"integer"},
+    "scope.get": {"scopeId":"string", "craftSessionId":"string"},
     "designer.crafts": {"query":"string", "offset":"integer", "limit":"integer"},
     "appearance.get": {"partIds":"array", "offset":"integer", "limit":"integer"},
     "resources.list": {"category":"string", "partId":"integer", "offset":"integer", "limit":"integer"},
     "groups.resolve": {"craftSessionId":"string", "expectedRevision":"integer", "selector":"object"},
     "decal.pose.get": {"id":"integer"},
-    **{name: {"craftSessionId":"string", "expectedRevision":"integer", "partIds":"array", "partIdsA":"array", "partIdsB":"array", "frame":"object", "plane":"object", "region":"object", "sampleSpacingMetres":"number", "limit":"integer", "includeHidden":"boolean", "export":"boolean", "exportMeshes":"boolean", "source":"string"} for name in ("geometry.measure", "geometry.section", "geometry.seam", "geometry.symmetry")},
+    **{name: {"craftSessionId":"string", "expectedRevision":"integer", "partIds":"array", "partIdsA":"array", "partIdsB":"array", "frame":"object", "plane":"object", "region":"object", "sampleSpacingMetres":"number", "limit":"integer", "includeHidden":"boolean", "export":"boolean", "exportMeshes":"boolean", "source":"string", "vertexAttributes":"array"} for name in ("geometry.measure", "geometry.section", "geometry.seam", "geometry.symmetry")},
     "craft.diff": {"checkpointId": "string", "limit": "integer"},
     "properties.describe": {"id":"integer", "templateId":"string", "type":"string", "family":"string", "query":"string", "fields":"array", "offset":"integer", "limit":"integer"},
     "properties.get": {"id":"integer", "family":"string", "query":"string", "fields":"array", "offset":"integer", "limit":"integer"},
-    "designer.capture": {"craftSessionId":"string", "expectedRevision":"integer", "views":"array", "resolution":"object", "focusPartIds":"array"},
+    "designer.capture": {"craftSessionId":"string", "expectedRevision":"integer", "views":"array", "resolution":"object", "focusPartIds":"array", "cuttingOutlinesVisible":"boolean"},
     "craft.centers": {"craftSessionId":"string", "expectedRevision":"integer", "detail":"string", "metric":"string", "focus":"string", "focusSelector":"object", "limit":"integer", "offset":"integer", "frame":"object", "images":"boolean", "resolution":"object", "baseline":"string"},
     "visual.resolve": {"craftSessionId":"string", "expectedRevision":"integer", "groups":"array", "maxParts":"integer"},
     "visual.capture": {"craftSessionId":"string", "expectedRevision":"integer", "groups":"array", "maxParts":"integer", "views":"array", "resolution":"object", "frame":"object", "details":"string", "includeHidden":"boolean", "overlays":"object"},
@@ -49,25 +58,37 @@ READS = {
     "catalog.search": {"query": "string", "offset": "integer", "limit": "integer"},
     "catalog.get": {"id": "string"}, "catalog.schema": {"id": "string", "type": "string"},
     "catalog.export": {}, "outputs.list": {"part": "integer", "view": "string"}, "variables.list": {"view": "string"},
-    "funky.list": {}, "funky.describe": {"name": "string"}, "funky.validate": {"expression": "string", "type": "string"},
+    "funky.list": {}, "funky.describe": {"name": "string"}, "funky.validate": {"expression": "string", "type": "string","partId":"integer","controllerIndex":"integer","field":"string"},
     "craft.history": {}, "craft.checkpoint.list": {}, "craft.checkpoint.get": {"id": "string"},
-    "batch.preview": {"craftSessionId": "string", "expectedRevision": "integer", "operations": "array"},
+    "batch.preview": {"craftSessionId": "string", "expectedRevision": "integer", "operations": "array","modelScope":"object"},
 }
 WRITES = {
-    "designer.control": {"action":"string", "expectedScene":"string", "craftSessionId":"string", "expectedRevision":"integer", "expectedCraftName":"string", "discardCurrent":"boolean", "craftId":"string", "partId":"integer", "clear":"boolean"},
+    "scope.capture": {"craftSessionId":"string", "expectedRevision":"integer", "partIds":"array", "boundaryPartIds":"array", "ownerId":"string", "spatialMarginMetres":"number"},
+    "scope.release": {"scopeId":"string", "craftSessionId":"string"},
+    "scoped.batch.apply": {"craftSessionId":"string", "scopeId":"string", "operations":"array", "chunkSize":"integer"},
+    "designer.control": {"action":"string", "expectedScene":"string", "craftSessionId":"string", "expectedRevision":"integer", "expectedCraftName":"string", "discardCurrent":"boolean", "craftId":"string", "partId":"integer", "clear":"boolean", "name":"string", "overwrite":"boolean", "expectedSavedName":"string", "expectedSavedModifiedUtc":"string"},
     "acceptance.native": {"craftSessionId":"string", "expectedRevision":"integer", "expectedCraftName":"string", "action":"string", "partId":"integer", "modifierType":"string", "modifierIndex":"integer", "member":"string", "element":"string", "attribute":"string", "value":["boolean","string","number","array","object"]},
-    "batch.apply": {"craftSessionId": "string", "expectedRevision": "integer", "operations": "array"},
+    "batch.apply": {"craftSessionId": "string", "expectedRevision": "integer", "operations": "array","modelScope":"object"},
     "craft.undo": {"craftSessionId": "string", "expectedRevision": "integer", "expectedHeadHash": "string"},
     "craft.rollback": {"craftSessionId": "string", "expectedRevision": "integer", "checkpointId": "string"},
-    "craft.checkpoint.create": {"craftSessionId": "string", "expectedRevision": "integer", "name": "string"},
+    "craft.checkpoint.create": {"craftSessionId": "string", "expectedRevision": "integer", "name": "string","pinned":"boolean"},
+    "craft.checkpoint.prune":{"craftSessionId":"string","expectedRevision":"integer","ids":"array","includePinned":"boolean"},
 }
 OP_SCHEMAS = {
+    "native.state":{"partId":["integer","string"],"changes":"array"},
+    "part.retype":{"partId":["integer","string"],"partType":"string","acceptConnectionLoss":"boolean","temporaryId":"string"},
+    "mechanical.update":{"partId":["integer","string"],"startWorld":"array","endWorld":"array","radiusMultiplier":"number","bootA":"boolean","bootB":"boolean"},
     "appearance.set": {"mode":"string", "materialId":"integer", "partIds":"array", "slots":"array", "patch":"object"},
     "transform.apply": {"partIds":"array", "groupId":"string", "frame":"object", "mode":"string", "translation":"array", "position":"array", "rotationQuaternion":"array", "pivot":"array", "anchorPartId":["integer","string"], "symmetric":"boolean"},
     "transform.align": {"partIds":"array", "groupId":"string", "sourcePartId":["integer","string"], "sourcePointId":"integer", "targetPartId":["integer","string"], "targetPointId":"integer", "offset":"array", "axis":"string", "symmetric":"boolean"},
     "decal.pose.set": {"partId":["integer","string"], "frame":"object", "position":"array", "rotationQuaternion":"array", "symmetric":"boolean"},
     "properties.set": {"partId":["integer","string"], "patch":"object", "symmetric":"boolean"},
-    "part.add": {"templateId": "string", "temporaryId": "string", "position": "array", "rotation": "array"},
+    "part.add": {"templateId": "string", "temporaryId": "string", "position": "array", "rotation": "array", "rootOnly": "boolean"},
+    "part.clone": {"partIds": "array", "temporaryIds": "array"},
+    "part.mirror": {"partIds": "array", "temporaryIds": "array", "linked":"boolean"},
+    "connection.auto": {"partA":"integer","partB":"integer","symmetric":"boolean"},
+    "hole.create": {"templateId":"string", "temporaryId":"string", "targetPartIds":"array", "position":"array", "rotationQuaternion":"array", "size":"array"},
+    "hole.update": {"partId":"integer", "targetPartIds":"array", "position":"array", "rotationQuaternion":"array", "size":"array"},
     "part.update": {"partId": ["integer", "string"], "changes": "array", "symmetric": "boolean"},
     "craft.refresh": {},
     "shape.update": {"partId": ["integer", "string"], "patch": "object", "symmetric": "boolean"},
@@ -81,9 +102,9 @@ OP_SCHEMAS = {
     "variable.add": {"variable": "string", "function": "string", "priority": "integer", "activator": "string"},
     "variable.update": {"index": "integer", "variable": "string", "function": "string", "priority": "integer", "activator": "string"},
     "variable.delete": {"index": "integer"}, "variable.reorder": {"order": "array"},
-    "output.bind": {"partId": ["integer", "string"], "modifier": "string", "outputId": "string", "variable": "string", "priority": "integer", "activator": "string"},
-    "output.update": {"partId": ["integer", "string"], "modifier": "string", "outputId": "string", "variable": "string", "priority": "integer", "activator": "string"},
-    "output.unbind": {"partId": ["integer", "string"], "modifier": "string", "outputId": "string"},
+    "output.bind": {"partId": ["integer", "string"], "modifier": "string", "modifierIndex":"integer", "outputId": "string", "variable": "string", "priority": "integer", "activator": "string"},
+    "output.update": {"partId": ["integer", "string"], "modifier": "string", "modifierIndex":"integer", "outputId": "string", "variable": "string", "priority": "integer", "activator": "string"},
+    "output.unbind": {"partId": ["integer", "string"], "modifier": "string", "modifierIndex":"integer", "outputId": "string"},
 }
 ALIASES = {"parts.add": "part.add", "parts.update": "part.update", "parts.delete": "part.delete",
     "connections.connect": "connection.connect", "connections.disconnect": "connection.disconnect",
@@ -91,12 +112,24 @@ ALIASES = {"parts.add": "part.add", "parts.update": "part.update", "parts.delete
     "outputs.bind": "output.bind", "outputs.update": "output.update", "outputs.unbind": "output.unbind"}
 ALIASES.update({k: k for k in ("craft.refresh", "shape.update", "wing.control.add", "fuselage.match", "symmetry.link", "symmetry.unlink", "symmetry.create", "symmetry.enable")})
 ALIASES["properties.set"] = "properties.set"
+ALIASES.update({name:name for name in ('part.retype','mechanical.update')})
 ALIASES.update({name:name for name in ("appearance.set", "transform.apply", "transform.align", "decal.pose.set")})
 LOCAL = {"commands.list", "commands.schema", "instances.list", "version", "skill.path", "knowledge.catalog", "knowledge.funky", "knowledge.complex"}
+LOCAL |= reference_cli.COMMANDS
+KNOWLEDGE_COMMANDS = {'knowledge.status','knowledge.search','knowledge.get','knowledge.export','knowledge.refresh'}
+LOCAL |= KNOWLEDGE_COMMANDS
+
+def knowledge_module():
+    # Source-tree compatibility CLI uses the same SDK implementation; packaged
+    # route1 launchers already execute sp2model.command_host directly.
+    sdk = str(Path(__file__).resolve().parents[1] / 'sdk')
+    if sdk not in sys.path: sys.path.insert(0, sdk)
+    from sp2model import knowledge
+    return knowledge
 TERMINAL = {"succeeded", "failed", "cancelled", "result_expired"}
 EXIT_CODES = {"invalid_input": 2, "unsupported_command": 2, "bridge_not_running": 3,
               "multiple_instances": 3, "bridge_unreachable": 3, "session_conflict": 4,
-              "revision_conflict": 4, "request_id_conflict": 4, "history_conflict": 4,
+              "revision_conflict": 4, "request_id_conflict": 4, "history_conflict": 4, "scope_conflict":4,
               "wait_timeout": 8, "operation_not_found": 9}
 
 class CliError(Exception):
@@ -143,6 +176,10 @@ def parse(argv: list[str]):
     return command, options
 
 def schema(command: str, operation_only=False):
+    if command in KNOWLEDGE_COMMANDS:
+        return knowledge_module().input_schema(command)
+    if command in reference_cli.COMMANDS:
+        return reference_cli.input_schema(command)
     if command == "designer.control":
         from designer_control import input_schema
         return input_schema()
@@ -174,7 +211,8 @@ def schema(command: str, operation_only=False):
         return {"type": "object", "properties": {"craftSessionId": {"type": "string"}, "expectedRevision": {"type": "integer"},
             "requestId": {"type": "string"}, "operation": operation},
             "required": ["craftSessionId", "expectedRevision", "operation"], "additionalProperties": False}
-    if command in OP_SCHEMAS:
+    operation_contract=command in OP_SCHEMAS and (operation_only or command not in READS)
+    if operation_contract:
         fields = {"kind": "string", **OP_SCHEMAS[command]}
     else:
         fields = {**READS, **WRITES}.get(command)
@@ -186,18 +224,30 @@ def schema(command: str, operation_only=False):
     if command == "variable.reorder":
         properties["order"].update(items={"type": "integer", "minimum": 0}, uniqueItems=True,
             description="List ALL old zero-based setter indices in the desired NEW sequence, each exactly once. For three setters, [2,0,1] moves old index 2 first. This is not a list of destination positions or swap pairs. Re-query indices after edits.", examples=[[2, 0, 1]])
-    for key in ("partId", "wingPartId", "partA", "partB"):
-        if command in OP_SCHEMAS and key in properties:
+    for key in ("partId", "wingPartId", "partA", "partB", "sourcePartId", "targetPartId", "anchorPartId"):
+        if operation_contract and key in properties:
+            properties[key]["type"]=["integer","string"]
             properties[key]["description"] = "Current numeric ID or a live temporaryId from an earlier operation. A deleted numeric ID stays invalid within this batch even if recycled."
+    if operation_contract:
+        for key in ("partIds","targetPartIds"):
+            if key in properties:properties[key].update(minItems=1,maxItems=2048,uniqueItems=True,items={"type":["integer","string"]})
     if "temporaryId" in properties:
         properties["temporaryId"].update(minLength=1, description="Unique for the whole batch, including previously deleted temporary bindings.")
     if command in WRITES:
         properties["requestId"] = {"type": "string", "minLength": 1, "description": "Required in CLI input unless supplied with --request-id; forwarded in the bridge request envelope."}
     required = {
+        "scope.capture":["craftSessionId","expectedRevision","partIds"],
+        "scope.get":["scopeId"], "scope.release":["scopeId"],
+        "scoped.batch.apply":["craftSessionId","scopeId","operations"],
         "craft.diff":["checkpointId"], "resources.list":["category"], "decal.pose.get":["id"],
         "groups.resolve":["craftSessionId","expectedRevision","selector"],
         "appearance.set":["kind","mode","materialId"], "transform.apply":["kind","mode"],
-        "transform.align":["kind","sourcePartId","sourcePointId","targetPartId","targetPointId"],
+        "transform.align":["kind","sourcePartId","targetPartId"],
+        "part.clone":["kind","partIds","temporaryIds"],
+        "part.mirror":["kind","partIds","temporaryIds","linked"],
+        "connection.auto":["kind","partA","partB"],
+        "hole.create":["kind","templateId","temporaryId","targetPartIds","size","position","rotationQuaternion"],
+        "hole.update":["kind","partId"],
         "decal.pose.set":["kind","partId","position","rotationQuaternion"],
         "geometry.measure":["craftSessionId","expectedRevision","partIdsA","partIdsB"],
         "geometry.section":["craftSessionId","expectedRevision","partIds","plane"],
@@ -223,14 +273,25 @@ def schema(command: str, operation_only=False):
         "output.update": ["kind", "partId", "modifier", "outputId"], "output.unbind": ["kind", "partId", "modifier", "outputId"],
     }.get(command, [])
     result = {"$schema": "https://json-schema.org/draft/2020-12/schema", "type": "object", "properties": properties, "required": required, "additionalProperties": False}
+    if operation_contract:properties['kind']['const']=command
     if command == "part.add":
         properties["position"].update(description="Target world position in metres of the template's first part; other parts retain their relative offsets after rotation. Omit to retain the template origin.")
         properties["rotation"].update(description="Unity Euler rotation OFFSET in degrees, applied around the template's first part and composed with each template part's existing rotation. Omitted or [0,0,0] preserves template orientation; this is not an absolute final world rotation.")
         properties["temporaryId"].update(description="Batch-local reference to the first part created by the template. Multi-part templates return all created IDs in actualChanges.partIds.")
+        properties["rootOnly"].update(description="Route A plugin option: instantiate only a certified native fuselage or wing template root, omitting the template assembly's other parts and connections. Defaults false.")
     if command == "connection.connect":
         result["description"] = "Creates a native connection, not a general snapping operation. Native modifiers may reshape/reposition parts: a fuselage/cone with autoResize=true can copy its neighbour's section and length and align to it. To preserve manually configured fuselage dimensions, explicitly set shape.update.patch.autoResize=false before connecting, then read back shape and pose."
     if "operations" in properties:
         properties["operations"].update(minItems=1, maxItems=100, items={"oneOf": [schema(kind, operation_only=True) for kind in OP_SCHEMAS]})
+    if command == "scope.capture":
+        properties["partIds"].update(minItems=1,uniqueItems=True,items={"type":"integer","minimum":0})
+        properties["spatialMarginMetres"].update(minimum=0,maximum=10,default=0.02)
+        result["description"]="Capture a strict current scope with writable parts, protected boundary/dependencies and shared-state fingerprints. Native attachment, symmetry, cutting and spatial neighbors are guarded separately."
+    if command == "scoped.batch.apply":
+        properties["chunkSize"].update(minimum=1,maximum=4,default=1)
+        allowed=("part.update","shape.update","properties.set","transform.apply","transform.align","decal.pose.set","appearance.set")
+        properties["operations"]["items"]={"oneOf":[schema(kind,operation_only=True) for kind in allowed]}
+        result["description"]="Fairly interleave atomic in-place chunks, with at least one ordinary editor frame between chunks. Unrelated revisions are accepted; scope/dependency/shared-state conflicts stop subsequent writes. Completed chunks are retained on later failure/cancel; no whole-task rollback. Topology and shared palette edits require a separate strict batch. Native synchronous rebuilds cannot be preempted."
     if "kind" in properties:
         properties["kind"]["const"] = command
     if command == "part.update":
@@ -255,6 +316,9 @@ def schema(command: str, operation_only=False):
         spec=importlib.util.spec_from_file_location("sp2build_precision_contracts",Path(__file__).with_name("precision_contracts.py"))
         module=importlib.util.module_from_spec(spec);spec.loader.exec_module(module)
         result=module.enrich(command,result)
+    if command in ('native.state','part.retype','mechanical.get','mechanical.update','wing.stations','airfoils.describe','parts.query','model.dependencies','craft.checkpoint.prune','batch.preview','batch.apply'):
+        from modeling_contracts import enrich
+        result=enrich(command,result)
     return result
 
 def is_running(pid: int) -> bool:
@@ -380,7 +444,9 @@ def load_args(command, options):
     ignored = {"input", "output", "json", "async", "timeout", "instance", "help", "request-id", "command"}
     if command in ("visual.capture", "designer.capture", "craft.centers") or command.startswith("geometry."):
         ignored.add("output-dir")
-    fields = {**READS, **WRITES}.get(command, {})
+    fields = ({name: value.get('type') for name,value in schema(command)['properties'].items()}
+              if command in reference_cli.build_review_cli.COMMANDS or command in KNOWLEDGE_COMMANDS else
+              reference_cli.FIELDS if command in reference_cli.COMMANDS else {**READS, **WRITES}.get(command, {}))
     for key, value in options.items():
         if key in ignored:
             continue
@@ -468,7 +534,7 @@ def help_data(command):
         "contextOptions": {"--output-dir": {"commands": ["visual.capture", "designer.capture", "craft.centers", "geometry.measure", "geometry.section", "geometry.seam", "geometry.symmetry", "operation.wait", "operation.result"],
             "description": "Root directory for downloaded visual artifacts, default ~/.sp2build/captures. Applies when the result contains a capture; each capture gets its own subdirectory."}},
         "examples": ["sp2build parts get --help", "sp2build visual capture --help", "sp2build commands schema --command parts.get", "sp2build commands schema --operation connection.connect"],
-        "target": "Only the current open designer aircraft. Saved aircraft paths are never accepted."
+        "target": "Part editing targets the current open designer aircraft. designer control accepts native saved-craft IDs for load and relative save names for save; arbitrary filesystem paths are not accepted."
     }
     if not command or command not in names:
         result["commands"] = matches if command else names
@@ -478,7 +544,7 @@ def help_data(command):
     result.update(command=command, entityKind="command", operationKind=ALIASES.get(command),
                   invocation="sp2build " + command.replace(".", " "),
                   schemaQuery="sp2build commands schema --command " + command,
-                  inputMode="guarded_operation_file" if shortcut else "flags_only" if command in LOCAL or command.startswith("operation.") else "flags_or_json_file",
+                  inputMode="guarded_operation_file" if shortcut else "flags_or_json_file" if command in reference_cli.COMMANDS else "flags_only" if command in LOCAL or command.startswith("operation.") else "flags_or_json_file",
                   requiredInputFields=request.get("required", []), arguments=[])
     for name, field in request.get("properties", {}).items():
         if shortcut or name == "requestId":
@@ -507,7 +573,7 @@ def visual_download(instance, result, options):
     return result
 
 
-def execute(argv):
+def _execute(argv):
     command, options = parse(argv)
     if command == "acceptance.host":
         from acceptance_host import execute as host_execute
@@ -519,7 +585,8 @@ def execute(argv):
     if command == "commands.list":
         return ok({"commands": command_names(), "operationKinds": OP_SCHEMAS,
                    "commandDetails": [{"name": name, "entityKind": "command", "invocation": "sp2build " + name.replace(".", " "),
-                                       "operationKind": ALIASES.get(name), "mutates": name in WRITES or name in ALIASES,
+                                       "operationKind": ALIASES.get(name), "mutates": name in WRITES or name in ALIASES or name in reference_cli.MUTATES,
+                                       "execution": knowledge_module().COMMANDS[name]["execution"] if name in KNOWLEDGE_COMMANDS else "worker" if name in reference_cli.WORKER else "local_with_live" if name in reference_cli.LIVE else "local" if name in LOCAL else "bridge",
                                        "schemaQuery": "sp2build commands schema --command " + name, **({"testOnly": True, "availability": "loaded_dev17_or_later_acceptance_build_and_named_fixture"} if name == "acceptance.native" else {}), **({"minimumPluginVersion": "0.4.0"} if name == "craft.centers" else {})} for name in command_names()],
                    "operationDetails": [{"name": kind, "entityKind": "operation", "cliCommands": [name for name, op in ALIASES.items() if op == kind],
                                          "schemaQuery": "sp2build commands schema --operation " + kind,
@@ -528,7 +595,7 @@ def execute(argv):
         if bool(options.get("command")) == bool(options.get("operation")):
             raise CliError("invalid_input", "Supply exactly one of --command NAME or --operation KIND")
         target = options.get("command") or options["operation"]
-        operation = "operation" in options or (target in OP_SCHEMAS and target not in ALIASES)
+        operation = "operation" in options or (target in OP_SCHEMAS and target not in ALIASES and target not in READS)
         contracts = contracts_module()
         if operation:
             if target not in OP_SCHEMAS:
@@ -542,7 +609,8 @@ def execute(argv):
                        "legacyQuery": "operation" not in options}), options
         if target not in command_names():
             raise CliError("unsupported_command", target)
-        output = contracts.output_schema(ALIASES.get(target) and "batch.apply" or target)
+        output = (knowledge_module().COMMANDS[target]['outputSchema'] if target in KNOWLEDGE_COMMANDS else
+                  reference_cli.output_schema(target) if target in reference_cli.COMMANDS else contracts.output_schema(ALIASES.get(target) and "batch.apply" or target))
         return ok({"command": target, "entityKind": "command", "operationKind": ALIASES.get(target), "contractVersion": VERSION,
                    "inputSchema": schema(target), "outputSchema": output,
                    "outputSchemaCoverage": "submitted_command_dependent" if target in ("operation.wait", "operation.result") else "documented_data_fields",
@@ -553,6 +621,37 @@ def execute(argv):
         return ok({"instances": [{k: v for k, v in x.items() if k != "token"} for x in instances()]}), options
     if command == "skill.path":
         return ok({"path": str(Path(__file__).resolve().parent.parent / "skills" / "sp2-build-assistant")}), options
+    if command in reference_cli.COMMANDS:
+        payload=load_args(command,options)
+        if command in reference_cli.build_review_cli.MUTATES and options.get('request-id'):
+            if payload.get('requestId') and payload['requestId'] != options['request-id']:
+                raise CliError('invalid_input','requestId and --request-id must agree')
+            payload['requestId']=options['request-id']
+        def live(native_command,native_payload):
+            native_options={k:v for k,v in options.items() if k in ('instance','timeout','output-dir')}
+            instance=select_instance(native_options)
+            if native_command=='operation.status':
+                return ok(http(instance,'v1/operations/'+native_payload['id']))
+            body=dict(native_payload)
+            request_id=body.pop('requestId',None) or uuid.uuid4().hex
+            accepted=http(instance,'v1/operations',{'command':native_command,'args':body,'requestId':request_id},'POST')
+            return visual_download(instance,wait(instance,accepted['operationId'],float(options.get('timeout',120))),native_options)
+        try:
+            data=reference_cli.dispatch(command,payload,live)
+            return data if isinstance(data,dict) and 'success' in data else ok(data),options
+        except Exception as error:
+            if isinstance(error,CliError): raise
+            code=getattr(error,'code','invalid_input')
+            details=getattr(error,'details',{})
+            raise CliError(code,str(error),**(details if isinstance(details,dict) else {})) from error
+    if command in KNOWLEDGE_COMMANDS:
+        module = knowledge_module()
+        from sp2model import Runtime
+        runtime = Runtime(instance=options.get('instance'), timeout=float(options.get('timeout',30)))
+        try:
+            return ok(module.Knowledge(runtime,resource_dir=Path(__file__).resolve().parents[1]/'knowledge/v077').call(command,load_args(command,options))),options
+        except Exception as error:
+            raise CliError(getattr(error,'code','knowledge_error'),str(error),**getattr(error,'details',{})) from error
     if command in ("knowledge.catalog", "knowledge.funky", "knowledge.complex"):
         name = {"knowledge.catalog": "catalog.json", "knowledge.funky": "funky.json", "knowledge.complex": "complex-parts.json"}[command]
         path = Path(__file__).resolve().parent.parent / "knowledge" / name
@@ -598,7 +697,9 @@ def execute(argv):
         probe = http(instance, "v1/operations", {"command":"designer.status", "args":{}, "requestId":uuid.uuid4().hex}, "POST")
         available = wait(instance, probe["operationId"], timeout)
         if not available.get("success") or not available.get("data", {}).get("designerControl", {}).get("available"):
-            raise CliError("unsupported_bridge_feature", "Native scene control requires a loaded dev19+ DLL. Installing the CLI alone does not reload the game.")
+            raise CliError("unsupported_bridge_feature", "Native scene control requires a loaded DLL 0.5.0+. Installing the CLI alone does not reload the game.")
+        if command == "designer.control" and args.get("action") not in available["data"]["designerControl"].get("actions", []):
+            raise CliError("unsupported_bridge_feature", "This control action is not supported by the loaded DLL. save/new require DLL 0.5.1+; restart after deployment.")
     if command == "acceptance.native":
         probe = http(instance, "v1/operations", {"command":"designer.status", "args":{}, "requestId":uuid.uuid4().hex}, "POST")
         available = wait(instance, probe["operationId"], timeout)
@@ -641,6 +742,15 @@ def execute(argv):
         raise CliError("unsupported_bridge_feature", "Structured views require a loaded DLL 0.3.2+. The bridge returned a legacy result; installing the CLI alone does not reload the DLL.", operationId=job["operationId"], instancePid=instance["pid"])
     return result, options
 
+def execute(argv):
+    result, options = _execute(argv)
+    if not options.get('help'):
+        import build_guidance
+        command, _ = parse(argv)
+        result = build_guidance.decorate(command, result)
+    return result, options
+
+
 def main(argv=None):
     started = time.monotonic()
     if hasattr(sys.stdout, "reconfigure"):
@@ -653,12 +763,20 @@ def main(argv=None):
     except (CliError, OSError, ValueError, KeyError, TypeError) as exc:
         error = exc if isinstance(exc, CliError) else CliError("invalid_input", str(exc))
         result = {"success": False, "schemaVersion": "1", "error": {"code": error.code, "message": str(error), **error.details}}
+        import build_guidance
+        try:
+            command, _ = parse(sys.argv[1:] if argv is None else argv)
+            result = build_guidance.decorate(command, result)
+        except (CliError, ValueError):
+            pass
     output = json.dumps(result, ensure_ascii=False, indent=2, allow_nan=False)
     if "output" in options:
         path = Path(options["output"]).resolve()
         path.parent.mkdir(parents=True, exist_ok=True)
         path.write_text(output + "\n", encoding="utf-8")
-        output = json.dumps(ok({"path": str(path), "sha256": hashlib.sha256((output + "\n").encode("utf-8")).hexdigest(), "resultSuccess": result["success"]}), ensure_ascii=False)
+        receipt = ok({"path": str(path), "sha256": hashlib.sha256((output + "\n").encode("utf-8")).hexdigest(), "resultSuccess": result["success"]})
+        if 'guidance' in result: receipt['guidance'] = result['guidance']
+        output = json.dumps(receipt, ensure_ascii=False)
     trace_timing("cli_main_before_stdout", started)
     print(output)
     return 0 if result["success"] else EXIT_CODES.get(result.get("error", {}).get("code"), 5)
