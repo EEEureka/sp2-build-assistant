@@ -2,6 +2,8 @@
 
 English · [简体中文](README.zh-CN.md)
 
+The latest [v0.7.8 release](https://github.com/EEEureka/sp2-build-assistant/releases/tag/v0.7.8) includes its own matching SDK skill. Use that complete package for a new installation. This page applies to the legacy 0.5.0 skill archive.
+
 The skill teaches a local AI agent how to use the SimplePlanes 2 designer through `sp2build`. Install the matching full package and start the game before giving the agent a modeling task. [v0.5.0 release](https://github.com/EEEureka/sp2-build-assistant/releases/tag/v0.5.0)
 
 Run the installer from PowerShell in the extracted skill archive.

@@ -1,8 +1,8 @@
-# Installation and updates
+# Legacy 0.5.0 installation and updates
 
 English · [简体中文](zh-CN/Installation.md)
 
-This page covers the 0.5.0 `sp2build` package. For an existing 0.7.8 package, follow the [SDK installation guide](SDK-0.7.8.md).
+The latest release is [v0.7.8](https://github.com/EEEureka/sp2-build-assistant/releases/tag/v0.7.8). For a new installation, follow the [SDK installation guide](SDK-0.7.8.md). This page covers the legacy 0.5.0 `sp2build` package.
 
 ## Install the plugin, CLI and agent skill
 

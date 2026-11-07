@@ -22,10 +22,12 @@ SP2 Build Assistant gives AI agents a native interface to the **SimplePlanes 2 a
 
 ## Get started
 
-1. [Install and connect](docs/Installation.md)
-2. [Run your first agent-assisted build task](docs/Quickstart.md)
-3. [Browse the CLI reference](docs/CLI-Usage.md)
+1. [Download v0.7.8](https://github.com/EEEureka/sp2-build-assistant/releases/tag/v0.7.8) and [install the SDK and plugin](docs/SDK-0.7.8.md)
+2. [Run your first agent-assisted build task](docs/SDK-0.7.8.md#run-a-modeling-task)
+3. Read the API and workflow references included in the release package.
 
 For specific workflows, see [precision editing](docs/Precision-Workflow.md), [native screenshots](docs/Designer-Screenshots.md), [mesh inspection](docs/Visual-Usage.md), and [aircraft centers](docs/Centers-Usage.md).
 
-Use the [0.5.0 release notes](docs/Release-0.5.0.md) for the repository baseline. If you already have the 0.7.8 package, start with the [SDK installation and modeling guide](docs/SDK-0.7.8.md).
+The latest release is **0.7.8**, with plugin 0.7.8 and Python SDK 0.7.8a1. The release includes the complete Windows package and its SHA-256 file. [Release notes](docs/Release-0.7.8.md)
+
+Versioned product sources are available under the [v0.7.8 tag](https://github.com/EEEureka/sp2-build-assistant/tree/v0.7.8). The [0.5.0 CLI documentation](docs/Installation.md) remains available for existing installations.

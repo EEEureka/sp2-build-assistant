@@ -2,6 +2,8 @@
 
 [English](../Quickstart.md) · 简体中文
 
+最新 [v0.7.8](https://github.com/EEEureka/sp2-build-assistant/releases/tag/v0.7.8) 请按 [SDK 建模工作流](SDK-0.7.8.md#用-sdk-做一轮建模)操作，下文命令适用于旧版 0.5.0 安装。
+
 安装配套插件、CLI 和 `sp2-build-assistant` skill。把 skill 交给能在游戏所在 Windows 电脑上执行命令的 Agent，再在设计器中打开测试载具或工作副本。
 
 ## 给 Agent 一个可验收的目标

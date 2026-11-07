@@ -4,6 +4,8 @@ English · [简体中文](zh-CN/SDK-0.7.8.md)
 
 Use this guide with the complete ZIP containing **plugin 0.7.8 and SDK 0.7.8a1**. The archive includes `manifest.json`, the plugin DLL, the `sp2model` wheel, `worker-wheelhouse`, and `deployment/install_073.py`. Install the plugin, SDK, skill and reference worker from the same package.
 
+Download [sp2build-0.7.8.zip](https://github.com/EEEureka/sp2-build-assistant/releases/download/v0.7.8/sp2build-0.7.8.zip) and its [SHA-256 file](https://github.com/EEEureka/sp2-build-assistant/releases/download/v0.7.8/sp2build-0.7.8.sha256) from the [v0.7.8 release](https://github.com/EEEureka/sp2-build-assistant/releases/tag/v0.7.8).
+
 ## Install into the game directory
 
 Use Windows x64, a compatible SimplePlanes 2 build, BepInEx 5 for Mono, and **64-bit Python 3.12**. The reference worker uses the offline Python 3.12 dependencies in the package. The installer checks the game's `Game.dll` hash against the manifest.
